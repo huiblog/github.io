@@ -6,17 +6,18 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="HandheldFriendly" content="True">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="description" content="&amp;emsp;平时看博客或技术文章的时候，经常被各种锁搞得晕晕乎乎，包括在 自旋锁、可重入锁、公平锁等等 、乐观锁、悲观锁、行锁、表锁、意向锁、排它锁等。前段时间终于把Java多线程相关的锁有机会学习了一遍。现在开始整理mysql相关的锁概念。先从乐观锁和悲观锁开始聊聊。&amp;emsp; 首先要知道，乐观锁和悲观锁不是真实存在的锁，只是两种抽象概念性的东西，就相当于Java中的接口，只是给出了一个定义，">
+    <meta name="description" content="date: 2019-09-10 18:43:00&amp;emsp;平时看博客或技术文章的时候，经常被各种锁搞得晕晕乎乎，包括在 自旋锁、可重入锁、公平锁等等 、乐观锁、悲观锁、行锁、表锁、意向锁、排它锁等。前段时间终于把Java多线程相关的锁有机会学习了一遍。现在开始整理mysql相关的锁概念。先从乐观锁和悲观锁开始聊聊。&amp;emsp; 首先要知道，乐观锁和悲观锁不是真实存在的锁，只是两种抽象概念性的东">
+<meta name="keywords" content="-mysql">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Mysql 乐观锁 和悲观锁">
 <meta property="og:url" content="http://yoursite.com/2019/09/10/Mysql-乐观锁-和悲观锁/index.html">
 <meta property="og:site_name">
-<meta property="og:description" content="&amp;emsp;平时看博客或技术文章的时候，经常被各种锁搞得晕晕乎乎，包括在 自旋锁、可重入锁、公平锁等等 、乐观锁、悲观锁、行锁、表锁、意向锁、排它锁等。前段时间终于把Java多线程相关的锁有机会学习了一遍。现在开始整理mysql相关的锁概念。先从乐观锁和悲观锁开始聊聊。&amp;emsp; 首先要知道，乐观锁和悲观锁不是真实存在的锁，只是两种抽象概念性的东西，就相当于Java中的接口，只是给出了一个定义，">
+<meta property="og:description" content="date: 2019-09-10 18:43:00&amp;emsp;平时看博客或技术文章的时候，经常被各种锁搞得晕晕乎乎，包括在 自旋锁、可重入锁、公平锁等等 、乐观锁、悲观锁、行锁、表锁、意向锁、排它锁等。前段时间终于把Java多线程相关的锁有机会学习了一遍。现在开始整理mysql相关的锁概念。先从乐观锁和悲观锁开始聊聊。&amp;emsp; 首先要知道，乐观锁和悲观锁不是真实存在的锁，只是两种抽象概念性的东">
 <meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2019-09-11T09:43:39.149Z">
+<meta property="og:updated_time" content="2019-09-11T10:37:07.113Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Mysql 乐观锁 和悲观锁">
-<meta name="twitter:description" content="&amp;emsp;平时看博客或技术文章的时候，经常被各种锁搞得晕晕乎乎，包括在 自旋锁、可重入锁、公平锁等等 、乐观锁、悲观锁、行锁、表锁、意向锁、排它锁等。前段时间终于把Java多线程相关的锁有机会学习了一遍。现在开始整理mysql相关的锁概念。先从乐观锁和悲观锁开始聊聊。&amp;emsp; 首先要知道，乐观锁和悲观锁不是真实存在的锁，只是两种抽象概念性的东西，就相当于Java中的接口，只是给出了一个定义，">
+<meta name="twitter:description" content="date: 2019-09-10 18:43:00&amp;emsp;平时看博客或技术文章的时候，经常被各种锁搞得晕晕乎乎，包括在 自旋锁、可重入锁、公平锁等等 、乐观锁、悲观锁、行锁、表锁、意向锁、排它锁等。前段时间终于把Java多线程相关的锁有机会学习了一遍。现在开始整理mysql相关的锁概念。先从乐观锁和悲观锁开始聊聊。&amp;emsp; 首先要知道，乐观锁和悲观锁不是真实存在的锁，只是两种抽象概念性的东">
     
     
         
@@ -90,11 +91,13 @@
          
           <li><a href="https://huiblog.github.io/">Home</a></li>
          
-          <li><a href="/categories/">categories</a></li>
+          <li><a href="/categories">categories</a></li>
          
           <li><a href="/archives/">Writing</a></li>
          
           <li><a href="https://github.com/huiblog">Projects</a></li>
+         
+          <li><a href="/tags">tags</a></li>
         
       </ul>
     </span>
@@ -130,7 +133,7 @@
 
     </div>
     <div id="toc">
-      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#一、悲观锁："><span class="toc-number">1.</span> <span class="toc-text">一、悲观锁：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1基本概念以及用法"><span class="toc-number">1.1.</span> <span class="toc-text">1.1基本概念以及用法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2悲观锁的两种模式"><span class="toc-number">1.2.</span> <span class="toc-text">1.2悲观锁的两种模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#二-乐观锁"><span class="toc-number">2.</span> <span class="toc-text">二. 乐观锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#三-总结"><span class="toc-number">3.</span> <span class="toc-text">三. 总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-实现方式"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 实现方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-适用场景"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 适用场景</span></a></li></ol></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#date-2019-09-10-18-43-00"><span class="toc-number">1.</span> <span class="toc-text">date: 2019-09-10 18:43:00</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#一、悲观锁："><span class="toc-number">2.</span> <span class="toc-text">一、悲观锁：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1基本概念以及用法"><span class="toc-number">2.1.</span> <span class="toc-text">1.1基本概念以及用法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2悲观锁的两种模式"><span class="toc-number">2.2.</span> <span class="toc-text">1.2悲观锁的两种模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#二-乐观锁"><span class="toc-number">3.</span> <span class="toc-text">二. 乐观锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#三-总结"><span class="toc-number">4.</span> <span class="toc-text">三. 总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-实现方式"><span class="toc-number">4.1.</span> <span class="toc-text">3.1 实现方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-适用场景"><span class="toc-number">4.2.</span> <span class="toc-text">3.2 适用场景</span></a></li></ol></li></ol>
     </div>
   </span>
 </div>
@@ -158,13 +161,18 @@
 
 
       
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/mysql/">-mysql</a>
+    </div>
+
 
     </div>
   </header>
   
 
   <div class="content" itemprop="articleBody">
-    <p>&emsp;平时看博客或技术文章的时候，经常被各种锁搞得晕晕乎乎，包括在 自旋锁、可重入锁、公平锁等等 、乐观锁、悲观锁、行锁、表锁、意向锁、排它锁等。前段时间终于把Java多线程相关的锁有机会学习了一遍。现在开始整理mysql相关的锁概念。先从乐观锁和悲观锁开始聊聊。<br>&emsp; 首先要知道，乐观锁和悲观锁不是真实存在的锁，只是两种抽象概念性的东西，就相当于Java中的接口，只是给出了一个定义，一种思想。可以根据这种思想去实现。</p>
+    <h2 id="date-2019-09-10-18-43-00"><a href="#date-2019-09-10-18-43-00" class="headerlink" title="date: 2019-09-10 18:43:00"></a>date: 2019-09-10 18:43:00</h2><p>&emsp;平时看博客或技术文章的时候，经常被各种锁搞得晕晕乎乎，包括在 自旋锁、可重入锁、公平锁等等 、乐观锁、悲观锁、行锁、表锁、意向锁、排它锁等。前段时间终于把Java多线程相关的锁有机会学习了一遍。现在开始整理mysql相关的锁概念。先从乐观锁和悲观锁开始聊聊。<br>&emsp; 首先要知道，乐观锁和悲观锁不是真实存在的锁，只是两种抽象概念性的东西，就相当于Java中的接口，只是给出了一个定义，一种思想。可以根据这种思想去实现。</p>
 <h2 id="一、悲观锁："><a href="#一、悲观锁：" class="headerlink" title="一、悲观锁："></a>一、悲观锁：</h2><h3 id="1-1基本概念以及用法"><a href="#1-1基本概念以及用法" class="headerlink" title="1.1基本概念以及用法"></a>1.1基本概念以及用法</h3><p>&emsp; 悲观锁是数据库层面实现的锁机制，他是指其他线程对本数据的修改是持有保守态度。<br>&emsp; 在对数据操作前，首先要获取锁，保证其他在修改期间，其他线程对数据不能进行修改。<br>&emsp; java 中的Synsynchronized 就是悲观锁思想的一种体现。<br>mysql中，悲观锁的实现方式是：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">使用语句</span><br><span class="line">select *  ...... forupdate</span><br></pre></td></tr></table></figure>
 
@@ -222,17 +230,19 @@
          
           <li><a href="https://huiblog.github.io/">Home</a></li>
          
-          <li><a href="/categories/">categories</a></li>
+          <li><a href="/categories">categories</a></li>
          
           <li><a href="/archives/">Writing</a></li>
          
           <li><a href="https://github.com/huiblog">Projects</a></li>
+         
+          <li><a href="/tags">tags</a></li>
         
       </ul>
     </div>
 
     <div id="toc-footer" style="display: none">
-      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#一、悲观锁："><span class="toc-number">1.</span> <span class="toc-text">一、悲观锁：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1基本概念以及用法"><span class="toc-number">1.1.</span> <span class="toc-text">1.1基本概念以及用法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2悲观锁的两种模式"><span class="toc-number">1.2.</span> <span class="toc-text">1.2悲观锁的两种模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#二-乐观锁"><span class="toc-number">2.</span> <span class="toc-text">二. 乐观锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#三-总结"><span class="toc-number">3.</span> <span class="toc-text">三. 总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-实现方式"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 实现方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-适用场景"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 适用场景</span></a></li></ol></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#date-2019-09-10-18-43-00"><span class="toc-number">1.</span> <span class="toc-text">date: 2019-09-10 18:43:00</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#一、悲观锁："><span class="toc-number">2.</span> <span class="toc-text">一、悲观锁：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1基本概念以及用法"><span class="toc-number">2.1.</span> <span class="toc-text">1.1基本概念以及用法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2悲观锁的两种模式"><span class="toc-number">2.2.</span> <span class="toc-text">1.2悲观锁的两种模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#二-乐观锁"><span class="toc-number">3.</span> <span class="toc-text">二. 乐观锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#三-总结"><span class="toc-number">4.</span> <span class="toc-text">三. 总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-实现方式"><span class="toc-number">4.1.</span> <span class="toc-text">3.1 实现方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-适用场景"><span class="toc-number">4.2.</span> <span class="toc-text">3.2 适用场景</span></a></li></ol></li></ol>
     </div>
 
     <div id="share-footer" style="display: none">
@@ -274,11 +284,13 @@
          
           <li><a href="https://huiblog.github.io/">Home</a></li>
          
-          <li><a href="/categories/">categories</a></li>
+          <li><a href="/categories">categories</a></li>
          
           <li><a href="/archives/">Writing</a></li>
          
           <li><a href="https://github.com/huiblog">Projects</a></li>
+         
+          <li><a href="/tags">tags</a></li>
         
       </ul>
     </nav>
