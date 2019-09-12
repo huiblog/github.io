@@ -1,0 +1,452 @@
+<!--
+	作者：Sariay
+	时间：2018-09-25
+	描述：There may be a bug, but don't worry, QiLing(器灵) says that it can work normally!
+-->
+<!DOCTYPE html>
+<html class="html-loading">
+		
+
+<head><meta name="generator" content="Hexo 3.9.0">
+	<meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <title>
+    
+      Mysql 乐观锁 和悲观锁 | null
+    
+  </title>
+  <meta name="author" content="渣渣辉">
+  <meta name="keywords" content>
+  <meta name="description" content>
+	<!-- favicon -->
+  <link rel="shortcut icon" href="/img/favicon.ico">
+
+  <!-- css -->
+  <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/css/Annie.css">
+  
+  <!-- jquery -->
+	<script src="/js/jquery.min.js"></script>
+
+  <!-- leancloud -->
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+<script src="/js/leancloud.js"></script>
+</head>
+	<body>
+		<!-- Preloader -->
+
+	<div id="preloader">
+		<div class="pre-container">
+			
+				<div class="spinner">
+					<div class="double-bounce1"></div>
+					<div class="double-bounce2"></div>
+				</div>
+						
+		</div>
+	</div>
+
+
+<!-- header -->
+<header class="fixbackground" data-img-mode="normal" data-normal-src="/img/1.jpg" data-random-max="110" data-random-src="https://sariay.github.io/Random-img/">
+	<div class="mask">
+		<!-- Logo and navigation -->
+		<div class="h-header">
+			<div id="logo">
+				<a href="/">
+						
+						<img src="/img/logo.png" alt="Logo">
+					
+				</a>
+			</div>
+			
+			<div id="navigation-show">
+				<ul>
+	
+		<li class="menu-home">
+			<a href="/" class="menu-item-home">主页</a>
+		</li>
+	
+		<li class="menu-archive">
+			<a href="/archives" class="menu-item-archive">归档</a>
+		</li>
+	
+		<li class="menu-categories">
+			<a href="/categories" class="menu-item-categories">分类</a>
+		</li>
+	
+		<li class="menu-tags">
+			<a href="/tags" class="menu-item-tags">标签</a>
+		</li>
+	
+		<li class="menu-about">
+			<a href="/about" class="menu-item-about">关于</a>
+		</li>
+	
+		<li class="menu-gallery">
+			<a href="/gallery" class="menu-item-gallery">相册</a>
+		</li>
+	
+
+	
+</ul>
+			</div>				
+		</div>
+
+		<!-- motto -->
+		<div class="h-body">	
+			
+				<p class="motto"></p>
+			
+		</div>
+		
+		<!-- others: such as time... -->			
+		<div class="h-footer">
+			<a href="javascript:;" id="read-more"><i class="fa fa-angle-double-down" aria-hidden="true"></i>
+			</a>
+
+			
+				<!-- 
+	This is only a demo, please go to "https://time.is" to set your city time! 
+-->
+<style type="text/css">
+	.header-date {
+		font-size: 1.6rem;
+		color: #fff;
+		position: absolute;
+		bottom: 5px;
+		right: 1rem;
+		writing-mode: tb-rl;
+	}	
+	
+	.header-date a {
+		border-bottom: none;
+	}
+
+	@media only screen and (max-width: 768 ) {
+		.header-date {
+			font-size: 1rem;
+		}			
+	}
+</style>
+<div class="header-date">
+	<a href="https://time.is/Beijing" id="time_is_link" rel="nofollow" ></a>
+	<span id="Beijing_z43d"></span>
+</div>
+<script src="//widget.time.is/zh.js"></script>
+<script>
+	time_is_widget.init({
+		Beijing_z43d:{
+			template:"DATE", 
+			date_format:"year年 monthname dnum日"
+		}
+	});
+</script>
+			
+		</div>
+	</div>
+</header>
+
+<div id="navigation-hide">
+	<!-- Progress bar -->
+	<div id="progress-bar"></div>
+
+	<!-- Progress percent -->
+	<div id="progress-percentage"><h1>0.0%</h1></div>
+
+	<div class="toc-switch"><span class="switch-button">目录</span></div>
+
+	<!-- Page title -->
+	<p>
+		
+			Mysql 乐观锁 和悲观锁
+		
+	</p>
+
+	<!-- Nav trigger for navigation-H-->
+	<a class="nav-trigger"><span></span></a>
+</div>
+
+<!-- Navigation in div(id="navigation-H") -->
+<nav class="nav-container" id="cd-nav">
+	<div class="nav-header">
+		<h3>Navigation</h3>
+		<a href="javascript:;" class="nav-close"></a>
+	</div>
+	<div class="nav-body">
+		<ul>
+	
+		<li class="menu-home">
+			<a href="/" class="menu-item-home">主页</a>
+		</li>
+	
+		<li class="menu-archive">
+			<a href="/archives" class="menu-item-archive">归档</a>
+		</li>
+	
+		<li class="menu-categories">
+			<a href="/categories" class="menu-item-categories">分类</a>
+		</li>
+	
+		<li class="menu-tags">
+			<a href="/tags" class="menu-item-tags">标签</a>
+		</li>
+	
+		<li class="menu-about">
+			<a href="/about" class="menu-item-about">关于</a>
+		</li>
+	
+		<li class="menu-gallery">
+			<a href="/gallery" class="menu-item-gallery">相册</a>
+		</li>
+	
+
+	
+</ul>
+	</div>
+	<div class="nav-footer">
+		<ul>
+	
+		<li>
+			<a href="http://github.com/" target="_blank">
+				<i class="fa fa-github"></i>
+			</a>
+		</li>
+	
+		<li>
+			<a href="http://github.com/" target="_blank">
+				<i class="fa fa-weibo"></i>
+			</a>
+		</li>
+	
+		<li>
+			<a href="http://github.com/" target="_blank">
+				<i class="fa fa-pinterest"></i>
+			</a>
+		</li>
+	
+		<li>
+			<a href="http://github.com/" target="_blank">
+				<i class="fa fa-instagram"></i>
+			</a>
+		</li>
+	
+		<li>
+			<a href="http://github.com/" target="_blank">
+				<i class="fa fa-twitter"></i>
+			</a>
+		</li>
+	
+		<li>
+			<a href="/atom.xml" target="_blank">
+				<i class="fa fa-rss"></i>
+			</a>
+		</li>
+			
+</ul>
+
+	</div>
+</nav>
+			
+		<!--main-->
+		<main>
+			<!--content start-->
+<div class="layout-page">	
+	<div class="layout-page-container">
+
+		<div class="layout-page-header">
+
+	
+
+		Mysql 乐观锁 和悲观锁
+
+	
+	
+</div>
+
+		
+
+			<div class="about">
+				<p>&emsp; 平时看博客或技术文章的时候，经常被各种锁搞得晕晕乎乎，包括在 自旋锁、可重入锁、公平锁等等 、乐观锁、悲观锁、行锁、表锁、意向锁、排它锁等。前段时间终于把Java多线程相关的锁有机会学习了一遍。现在开始整理mysql相关的锁概念。先从乐观锁和悲观锁开始聊聊。<br>&emsp; 首先要知道，乐观锁和悲观锁不是真实存在的锁，只是两种抽象概念性的东西，就相当于Java中的接口，只是给出了一个定义，一种思想。可以根据这种思想去实现。</p>
+<h2 id="一、悲观锁："><a href="#一、悲观锁：" class="headerlink" title="一、悲观锁："></a>一、悲观锁：</h2><h3 id="1-1基本概念以及用法"><a href="#1-1基本概念以及用法" class="headerlink" title="1.1基本概念以及用法"></a>1.1基本概念以及用法</h3><p>&emsp; 悲观锁是数据库层面实现的锁机制，他是指其他线程对本数据的修改是持有保守态度。<br>&emsp; 在对数据操作前，首先要获取锁，保证其他在修改期间，其他线程对数据不能进行修改。<br>&emsp; java 中的Synsynchronized 就是悲观锁思想的一种体现。<br>mysql中，悲观锁的实现方式是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">使用语句</span><br><span class="line">select *  ...... forupdate</span><br></pre></td></tr></table></figure>
+
+<p>&emsp; 如果能正确获取锁，那么其他线程要对于这条数据做修改，必须等待这个事务提交释放锁之后，才会执行。<br>下面举个栗子：<br>&emsp; 创建一张表，并开两个查询窗口。都关闭自动提交。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">建表语句：</span><br><span class="line">DROP TABLE IF EXISTS `lock_demo`;</span><br><span class="line">CREATE TABLE `lock_demo` (</span><br><span class="line">  `id` bigint(20) NOT NULL AUTO_INCREMENT,</span><br><span class="line">  `count` int(11) DEFAULT NULL,</span><br><span class="line">  `version` int(255) DEFAULT NULL,</span><br><span class="line">  PRIMARY KEY (`id`)</span><br><span class="line">) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;</span><br><span class="line"></span><br><span class="line">INSERT INTO `lock_demo` VALUES (&apos;1&apos;, &apos;1&apos;, &apos;0&apos;);</span><br></pre></td></tr></table></figure>
+
+
+
+<p>窗口1，加锁</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">//查询窗口1</span><br><span class="line">set autocommit = 0; </span><br><span class="line"></span><br><span class="line">SELECT * from lock_demo where id = 1 for update;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp; 窗口2 ,关闭自动提交，进行数据查询,可以查询出数据，表明悲观锁对于其他线程数据查询是不受影响的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">set autocommit = 0; </span><br><span class="line">SELECT * from lock_demo where id = 1</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;当窗口 2 进行加锁或更新的时候，那么就会报错，因为一直获取不到锁，就会提示超时。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">//另一个线程进行加锁</span><br><span class="line">SELECT * from lock_demo where id = 1 for update;</span><br><span class="line"></span><br><span class="line">//另一个线程更新</span><br><span class="line">update lock_demo set version = 2 WHERE id = 1;</span><br><span class="line"></span><br><span class="line">错误提示信息：</span><br><span class="line">[Err] 1205 - Lock wait timeout exceeded; try restarting transaction</span><br><span class="line">当前线程提交事务后，其他线程才能进行更新。</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2悲观锁的两种模式"><a href="#1-2悲观锁的两种模式" class="headerlink" title="1.2悲观锁的两种模式"></a>1.2悲观锁的两种模式</h3><p>这里引出了悲观锁涉及到的另外两个锁概念，它们就是共享锁与排它锁。</p>
+<p>共享锁和排它锁是悲观锁的不同的实现，它俩都属于悲观锁的范畴。</p>
+<p>共享锁顾名思义，共享指的是不同事务对同一个数据可以共享一把锁，也就是说不同事务都可以通过加共享锁或者不加锁的读取读数据。  </p>
+<p>但是其他事物不能对改行数据加排他锁。参考排它锁的定义。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">语法： </span><br><span class="line"> select * from table lock in share mode</span><br></pre></td></tr></table></figure>
+
+<p>排他锁，是指对条数据加排它锁后，其他事务就不能对当前数据加锁，包括共享锁和排它锁都不可以。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">语法：</span><br><span class="line">select * from table for update</span><br></pre></td></tr></table></figure>
+
+<p>innodb 存储在执行修改、删除的时候，都是会默认增加排它锁。</p>
+<p>在查询的时候，是不加任何锁的，注意不是加了共享锁，<strong>是不加任何锁的</strong>。所以才会有在第一个事务中加排它锁的时候，第二个事物依旧可以通过 select * …… 的方式查询。</p>
+<p>但是不能再加锁，共享锁和排它锁都不行，也就是执行    select * from table for update      select * from table lock in share mode  都不行，也就是执行update 和delete 操作都是不行的。</p>
+<p>那么插入数据是是否受影响呢，答案是肯定不受影响。</p>
+<p>首先，共享锁和排它锁的粒度是行，也就是针对一行数据。例如你再id = 1的数据上加了排他锁，那么id = 2的数据依旧可以更新删除，更不用说去新增一条数据了。</p>
+<h2 id="二-乐观锁"><a href="#二-乐观锁" class="headerlink" title="二. 乐观锁"></a>二. 乐观锁</h2><p>  乐观锁表示对数据的更新持有乐观态度，表示不会造成冲突，所以一般是先进行业务处理，在对数据更新的时候再去判定是否有冲突。</p>
+<p>  乐观锁是用户自己实现的，不是数据库层面的锁。<br>  原理就是：  </p>
+<pre><code>在表字段中加一个version 字段。每次更新的时候去检查当前查询的数据中的version 与数据库中的version是否相同，如果不同则不进行更新，相同则进行更新，然后将version 加1</code></pre><p>   类似的可以使时间戳实现相同的功能。</p>
+<h2 id="三-总结"><a href="#三-总结" class="headerlink" title="三. 总结"></a>三. 总结</h2><h3 id="3-1-实现方式"><a href="#3-1-实现方式" class="headerlink" title="3.1 实现方式"></a>3.1 实现方式</h3><p>悲观锁是数据库级别实现的，直接使用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * .....  for update 就表示对当前数据加锁。</span><br></pre></td></tr></table></figure>
+
+<p>乐观锁是需要自己实现，一般是通过版本控制或者加时间戳等方式实现。</p>
+<h3 id="3-2-适用场景"><a href="#3-2-适用场景" class="headerlink" title="3.2 适用场景"></a>3.2 适用场景</h3><p>乐观锁在不发生取锁失败的情况下开销比悲观锁小，但是一旦发生失败回滚开销则比较大，因此适合用在取锁失败概率比较小的场景，可以提升系统并发性能</p>
+<p>乐观锁还适用于一些比较特殊的场景，例如在业务操作过程中无法和数据库保持连接等悲观锁无法适用的地方</p>
+<p>参考文章：<a href="https://www.cnblogs.com/cyhbyw/p/8869855.html" target="_blank" rel="noopener">https://www.cnblogs.com/cyhbyw/p/8869855.html</a></p>
+
+			</div>
+
+		
+	</div>
+
+	
+</div>
+
+		</main>
+
+		<!--footer-->
+		<footer>
+	<div class="social">
+		<ul>
+	
+		<li>
+			<a href="http://github.com/" target="_blank">
+				<i class="fa fa-github"></i>
+			</a>
+		</li>
+	
+		<li>
+			<a href="http://github.com/" target="_blank">
+				<i class="fa fa-weibo"></i>
+			</a>
+		</li>
+	
+		<li>
+			<a href="http://github.com/" target="_blank">
+				<i class="fa fa-pinterest"></i>
+			</a>
+		</li>
+	
+		<li>
+			<a href="http://github.com/" target="_blank">
+				<i class="fa fa-instagram"></i>
+			</a>
+		</li>
+	
+		<li>
+			<a href="http://github.com/" target="_blank">
+				<i class="fa fa-twitter"></i>
+			</a>
+		</li>
+	
+		<li>
+			<a href="/atom.xml" target="_blank">
+				<i class="fa fa-rss"></i>
+			</a>
+		</li>
+			
+</ul>
+
+	</div>
+		
+	<div class="copyright">
+		<p>
+			 
+				&copy;2017 - 2019, content by 渣渣辉. All Rights Reserved.
+			
+			
+			
+
+	<!-- busuanzi -->
+	<!-- busuanzi -->
+
+		
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	
+
+		<span id="busuanzi_container_site_pv">
+	    	本站总访问量<span id="busuanzi_value_site_pv"></span>次
+		</span>
+
+		<span id="busuanzi_container_site_uv">
+	  		本站访客数<span id="busuanzi_value_site_uv"></span>人次
+		</span>
+		
+	
+
+
+
+
+		</p>
+		<p>
+			<a href="http://hexo.io/" title="Hexo" target="_blank" rel="noopener">Hexo</a> Theme <a href="https://github.com/Sariay/hexo-theme-Annie" title="Annie" target="_blank" rel="noopener">Annie</a> by Sariay.
+			<a href="javascript:zh_tran('s');" class="zh_click" id="zh_click_s">简体</a> 
+			<a href="javascript:zh_tran('t');" class="zh_click" id="zh_click_t">繁體</a>				
+		</p>
+	</div>		
+</footer>
+		
+	<!-- set '1' to show motto in all pages! -->
+
+	<script src="/plugin/motto/motto.js"></script>
+	
+	<script type="text/javascript">
+		$(".motto").html( getMingYanContent() );
+	</script>	
+
+
+
+
+
+<!-- love effect -->
+
+	<script src="/plugin/love/love.js"></script>
+
+
+<!-- back to top -->
+
+	
+	<div id="totop">
+  		<a href="javascript:;"  name="TOTOP" class="fa fa-arrow-up" ></a>
+	</div>
+
+
+
+
+<!-- site analysis -->
+
+
+	<!-- site-analysis -->
+	
+	
+	
+	
+	
+ 
+
+<script src="/plugin/vibrant/vibrant.js"></script>
+<script src="/plugin/chinese/chinese.js"></script>
+<script src="/plugin/imgLazyLoader/yall.min.js"></script>
+<script src="/plugin/imgResize/jquery.resizeimagetoparent.min.js"></script>
+<script src="/plugin/nicescroll/jquery.nicescroll.js"></script>
+<script src="/js/resizediv.js"></script>
+<script src="/js/main.js"></script>
+	</body>	
+</html>
