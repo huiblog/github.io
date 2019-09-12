@@ -25,7 +25,7 @@
   <section class="outer">
   
 
-<article id="page-" class="article article-type-page" itemscope itemprop="blogPost" data-scroll-reveal>
+<article id="post-Mysql-test" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
   
   <div class="article-inner">
     
@@ -45,6 +45,25 @@
     
 
     
+      <div class="article-meta">
+        <a href="/2019/09/10/Mysql-test/" class="article-date">
+  <time datetime="2019-09-10T10:43:00.000Z" itemprop="datePublished">2019-09-10</time>
+</a>
+        
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/mysql/">mysql</a>
+  </div>
+
+      </div>
+    
+
+    
+      
+    <div class="tocbot"></div>
+
+
+
+
 
     
 
@@ -55,7 +74,7 @@
       
 
       
-        <p>&emsp; 平时看博客或技术文章的时候，经常被各种锁搞得晕晕乎乎，包括在 自旋锁、可重入锁、公平锁等等 、乐观锁、悲观锁、行锁、表锁、意向锁、排它锁等。前段时间终于把Java多线程相关的锁有机会学习了一遍。现在开始整理mysql相关的锁概念。先从乐观锁和悲观锁开始聊聊。<br>&emsp; 首先要知道，乐观锁和悲观锁不是真实存在的锁，只是两种抽象概念性的东西，就相当于Java中的接口，只是给出了一个定义，一种思想。可以根据这种思想去实现。</p>
+        <h2 id="date-2019-09-10-18-43-00"><a href="#date-2019-09-10-18-43-00" class="headerlink" title="date: 2019-09-10 18:43:00"></a>date: 2019-09-10 18:43:00</h2><p>&emsp;平时看博客或技术文章的时候，经常被各种锁搞得晕晕乎乎，包括在 自旋锁、可重入锁、公平锁等等 、乐观锁、悲观锁、行锁、表锁、意向锁、排它锁等。前段时间终于把Java多线程相关的锁有机会学习了一遍。现在开始整理mysql相关的锁概念。先从乐观锁和悲观锁开始聊聊。<br>&emsp; 首先要知道，乐观锁和悲观锁不是真实存在的锁，只是两种抽象概念性的东西，就相当于Java中的接口，只是给出了一个定义，一种思想。可以根据这种思想去实现。</p>
 <h2 id="一、悲观锁："><a href="#一、悲观锁：" class="headerlink" title="一、悲观锁："></a>一、悲观锁：</h2><h3 id="1-1基本概念以及用法"><a href="#1-1基本概念以及用法" class="headerlink" title="1.1基本概念以及用法"></a>1.1基本概念以及用法</h3><p>&emsp; 悲观锁是数据库层面实现的锁机制，他是指其他线程对本数据的修改是持有保守态度。<br>&emsp; 在对数据操作前，首先要获取锁，保证其他在修改期间，其他线程对数据不能进行修改。<br>&emsp; java 中的Synsynchronized 就是悲观锁思想的一种体现。<br>mysql中，悲观锁的实现方式是：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">使用语句</span><br><span class="line">select *  ...... forupdate</span><br></pre></td></tr></table></figure>
 
@@ -101,18 +120,41 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/test/index.html" data-id="ck0g4jzgt0007wwvxl5twljj3"
+      <a data-url="http://yoursite.com/2019/09/10/Mysql-test/" data-id="ck0g4jzgi0000wwvxdg8fra8a"
          class="article-share-link">Share</a>
       
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li></ul>
+
     </footer>
 
   </div>
 
   
     
+  <nav class="article-nav">
+    
+      <a href="/2019/09/12/hellotest/" class="article-nav-link">
+        <strong class="article-nav-caption">Newer posts</strong>
+        <div class="article-nav-title">
+          
+            Hello World
+          
+        </div>
+      </a>
+    
+    
+      <a href="/2019/09/10/Mysql-乐观锁-和悲观锁/" class="article-nav-link">
+        <strong class="article-nav-caption">Olde posts</strong>
+        <div class="article-nav-title">Mysql 乐观锁 和悲观锁</div>
+      </a>
+    
+  </nav>
+
 
   
 
+  
+    
   
 
 </article>
@@ -139,8 +181,8 @@
 
 </main>
 
-  <aside class="sidebar">
-    
+<aside class="sidebar sidebar-specter">
+  
     <button class="navbar-toggle"></button>
 <nav class="navbar">
   
@@ -209,6 +251,21 @@
   <script src="/fancybox/jquery.fancybox.min.js"></script>
 
 
+
+  <script src="/js/tocbot.min.js"></script>
+  <script>
+    // Tocbot_v4.7.0  http://tscanlin.github.io/tocbot/
+    tocbot.init({
+      tocSelector: '.tocbot',
+      contentSelector: '.article-entry',
+      headingSelector: 'h1, h2, h3, h4, h5, h6',
+      hasInnerContainers: true,
+      scrollSmooth: true,
+      positionFixedSelector: '.tocbot',
+      positionFixedClass: 'is-position-fixed',
+      fixedSidebarOffset: 'auto',
+    });
+  </script>
 
 
 <script src="/js/ocean.js"></script>
