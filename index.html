@@ -1,552 +1,421 @@
 <!DOCTYPE html>
-<html lang="en">
-<head><meta name="generator" content="Hexo 3.9.0">
-  <meta charset="utf-8">
-  
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title>
+<html>
+  <head><meta name="generator" content="Hexo 3.9.0">
     
+    <meta charset="utf-8">
+    <meta name="baidu-site-verification" content="vvVgSQUzPU">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="keywords" content>
+     
+    <meta name="description" content>
+    
+    <title>
+       渣渣辉
     </title>
-  
-    <link rel="shortcut icon" href="/favicon.ico">
-  
-  <link rel="stylesheet" href="/css/style.css">
-  
-    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
-  
-  <script src="/js/pace.min.js"></script>
-</head>
-</html>
-<body>
-<main class="content">
-  <section class="jumbotron">
-  <div class="video">
-    
-      <div class="video-frame">
-        <img src="/images/ocean/overlay-hero.png" alt="Decorative image frame">
-      </div>
-    
-    <div class="video-media">
-      <video playsinline="" autoplay="" loop="" muted="" data-autoplay=""
-             poster="/images/ocean/ocean.png" x5-video-player-type="h5">
-        <source src="/images/ocean/ocean.mp4" type="video/mp4">
-        <source src="/images/ocean/ocean.ogv" type="video/ogg">
-        <source src="/images/ocean/ocean.webm" type="video/webm">
-        <p>Your user agent does not support the HTML5 Video element.</p>
-      </video>
-      <div class="video-overlay"></div>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/style/style.css">
+  </head>
+  <body>
+    <div id="fixed-menu">
+      <span class="iconfont icon-arrowup"></span>
     </div>
-    <div class="video-inner text-center text-white">
-      <h1><a href="/"></a></h1>
-      <p></p>
-      <div><img src="/images/hexo-inverted.svg" class="brand" alt=""></div>
+    <div id="progress">
+      <div class="line"></div>
     </div>
-    <div class="video-learn-more">
-      <a class="anchor" href="#landingpage"><i class="fe fe-mouse"></i></a>
-    </div>
-  </div>
-</section>
+    <!-- <div id="search-wrap">
+      <input type="text" placeholder="Search Keys"/>
 
-<div id="landingpage">
-  <section class="outer">
-  <article class="articles">
-    
-    <h1 class="page-type-title"></h1>
-
-    
+      <div class="result"></div>
+    </div> -->
+    <div id="head">
       
-        
-
-<article id="post-RabbitMq学习（二）RabbitMQ的消息确认机制" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
-  
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h2 itemprop="name">
-      <a class="article-title" href="/2019/09/15/RabbitMq学习（二）RabbitMQ的消息确认机制/">RabbitMq学习（二）RabbitMQ的消息确认机制</a>
-    </h2>
-  
-  
-
-
-
-
-      </header>
-    
-
-    
-      <div class="article-meta">
-        <a href="/2019/09/15/RabbitMq学习（二）RabbitMQ的消息确认机制/" class="article-date">
-  <time datetime="2019-09-14T16:10:01.000Z" itemprop="datePublished">2019-09-15</time>
-</a>
-        
-      </div>
-    
-
-    
-
-    <div class="article-entry" itemprop="articleBody">
-      
-
-
-      
-
-      
-        <h2 id="一-为什么有消息确认机制"><a href="#一-为什么有消息确认机制" class="headerlink" title="一. 为什么有消息确认机制"></a>一. 为什么有消息确认机制</h2><p> 在RabbitMq中，一个消息从产生到最终的消息接受，中间大致会有三个环节，首先是消息到达交换机、然后是消息通过交换机到达队列，最后消费者消费绑定的队列消息。</p>
-<p> 但是在这个过程中，如果出现网络或者系统的异常，就会导致消息不能被正常消费。如果不能正常消费消息，会造成两方面的问题。</p>
-<h3 id="1-1-在服务端"><a href="#1-1-在服务端" class="headerlink" title="1.1 在服务端"></a>1.1 在服务端</h3><p>消息到达队列，但是没有消费者去消费，就会造成消息积压，被积压的消息会存入缓存，直到有消费者进行消费。如果一直没有消费者进行消费，那么就会直接将内存占满，影响服务器性能。</p>
-<h3 id="1-2-消费端"><a href="#1-2-消费端" class="headerlink" title="1.2 消费端"></a>1.2 消费端</h3><p>一个消息一旦被消费后，那么就会从队列删除。如果说消息已经到达消费者，但是消费者处理消息之前系统出现了异常，那么就相当于这条消息丢失了，是个很大的问题。</p>
-<p><strong>所以RabbitMq才会出现消息确认机制。对应的也是服务端客客户端两个方面解决</strong></p>
-<h2 id="二、-怎么使用消息确认机制"><a href="#二、-怎么使用消息确认机制" class="headerlink" title="二、 怎么使用消息确认机制"></a>二、 怎么使用消息确认机制</h2><h3 id="2-1-消息发送确认"><a href="#2-1-消息发送确认" class="headerlink" title="2.1 消息发送确认"></a><strong>2.1 消息发送确认</strong></h3><p><strong>发送的确认也是分为两个步骤：到交换机的确认 ConfirmCallback 和到队列的确认 ReturnCallback</strong></p>
-<p>​       这些确认机制默认都是不开启的，在SpringBoot 项目中，我们可以在配置文件中开启：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">spring.rabbitmq.publisher-confirms = true</span><br><span class="line">spring.rabbitmq.publisher-returns = true</span><br></pre></td></tr></table></figure>
-
-<p>或者 在配置连接工厂的时候开启：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@Bean</span><br><span class="line">    public ConnectionFactory connectionFactory() &#123;</span><br><span class="line">        CachingConnectionFactory connectionFactory = new CachingConnectionFactory(host,port);</span><br><span class="line">        connectionFactory.setUsername(username);</span><br><span class="line">        connectionFactory.setPassword(password);</span><br><span class="line">        connectionFactory.setVirtualHost(&quot;/&quot;);</span><br><span class="line">        //开启到交换机的确认</span><br><span class="line">        connectionFactory.setPublisherConfirms(true);</span><br><span class="line">        //开启到队列的确认</span><br><span class="line">        connectionFactory.setPublisherReturns(true);</span><br><span class="line">        return connectionFactory;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<p>在代码中实现 RabbitTemplate.ConfirmCallback 接口，如果消息被<strong>交换机</strong>正常接受，就会回调confirm 方法，参数的含义通过代码可以知晓。</p>
-<p>实现 RabbitTemplate.ReturnCallback 接口，如果消息不能被发送到队列，就会调用ReturnedMessage 方法。</p>
-<p><strong>注意：一个是接收成功调用，一个是接收失败调用</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">@Component</span><br><span class="line">public class ASender implements RabbitTemplate.ReturnCallback,RabbitTemplate.ConfirmCallback &#123;</span><br><span class="line">    private final Logger logger = LoggerFactory.getLogger(this.getClass());</span><br><span class="line"></span><br><span class="line">    @Autowired</span><br><span class="line">    private RabbitTemplate rabbitTemplate;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 回调</span><br><span class="line">     */</span><br><span class="line">    @Override</span><br><span class="line">    public void confirm(CorrelationData correlationData, boolean ack, String cause) &#123;</span><br><span class="line">        logger.info(&quot; 回调id:&quot; + correlationData);</span><br><span class="line">        if (ack) &#123;</span><br><span class="line">            logger.info(&quot;消息成功消费&quot;);</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            logger.info(&quot;消息消费失败:&quot; + cause);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void returnedMessage(Message message, int replyCode,</span><br><span class="line">                                String replyText, String exchange, String routingKey) &#123;</span><br><span class="line">        logger.info(&quot;消息内容:&#123;&#125;&quot;, new String(message.getBody()));</span><br><span class="line">        logger.info(&quot;回复文本:&#123;&#125;,回复代码：&#123;&#125;&quot;, replyText, replyCode);</span><br><span class="line">        logger.info(&quot;交换器名称:&#123;&#125;,路由键：&#123;&#125;&quot;, exchange, routingKey);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @PostConstruct</span><br><span class="line">    public void init()&#123;</span><br><span class="line">        rabbitTemplate.setReturnCallback(this);</span><br><span class="line">        rabbitTemplate.setConfirmCallback(this);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public void sendMsg(String content) &#123;</span><br><span class="line">        CorrelationData correlationId = new CorrelationData(UUID.randomUUID().toString());</span><br><span class="line">        rabbitTemplate.convertAndSend(EXCHANGE_C, &quot;aa.apple.big&quot;, content, correlationId);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="2-2-消息接受确认"><a href="#2-2-消息接受确认" class="headerlink" title="2.2 消息接受确认"></a>2.2 消息接受确认</h3><p> 消费端消息通过 ACK 确认是否被正确接收，每个 Message 都要被确认（acknowledged），可以手动去 ACK 或自动 ACK</p>
-<p>  ACK 确认模式分为三种：</p>
-<ul>
-<li>AcknowledgeMode.NONE：自动确认</li>
-<li>AcknowledgeMode.AUTO：根据情况确认</li>
-<li>AcknowledgeMode.MANUAL：手动确认</li>
-</ul>
-<p>默认是自动确认，开启手动确认的方式也是两种方式：</p>
-<p>配置文件配置：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">spring:  </span><br><span class="line">    rabbitmq:    </span><br><span class="line">       listener:          </span><br><span class="line">          simple:</span><br><span class="line">            acknowledge-mode: manual</span><br><span class="line">          </span><br><span class="line">另一种是在RabbitListenerContainerFactory配置：</span><br><span class="line">@Bean</span><br><span class="line">public RabbitListenerContainerFactory&lt;?&gt; rabbitListenerContainerFactory(ConnectionFactory connectionFactory)&#123;</span><br><span class="line">    SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();</span><br><span class="line">    factory.setConnectionFactory(connectionFactory);</span><br><span class="line">    factory.setMessageConverter(new Jackson2JsonMessageConverter());</span><br><span class="line">    factory.setAcknowledgeMode(AcknowledgeMode.MANUAL);             //开启手动 ack</span><br><span class="line">    return factory;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">在客户端接受消息：</span><br><span class="line">@RabbitHandler</span><br><span class="line">public void processMessage2(String message, Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long tag) &#123;</span><br><span class="line">    System.out.println(message);</span><br><span class="line">    try &#123;</span><br><span class="line">        channel.basicAck(tag, false);            // 确认消息</span><br><span class="line">        logger.info(&quot;消费者成功确认&quot; + message);</span><br><span class="line">    &#125; catch (IOException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">确认 basicAck 参数解释：</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><strong>deliveryTag（唯一标识 ID）</strong>：当一个消费者向 RabbitMQ 注册后，会建立起一个 Channel ，RabbitMQ 会用 basic.deliver 方法向消费者推送消息，这个方法携带了一个 delivery tag， <strong>它代表了 RabbitMQ 向该 Channel 投递的这条消息的唯一标识 ID</strong>，是一个单调递增的正整数，delivery tag 的范围仅限于 Channel</li>
-<li><strong>multiple</strong>：为了减少网络流量，手动确认可以被批处理，<strong>当该参数为 true 时，则可以一次性确认 delivery_tag 小于等于传入值的所有消息</strong></li>
-</ul>
-<p><a href="https://www.jianshu.com/p/2c5eebfd0e95" target="_blank" rel="noopener">https://www.jianshu.com/p/2c5eebfd0e95</a></p>
-<p>Demo:      <a href="https://github.com/zhuanzhiBUG/springboot-rabbitmq.git" target="_blank" rel="noopener">https://github.com/zhuanzhiBUG/springboot-rabbitmq.git</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/09/15/RabbitMq学习（二）RabbitMQ的消息确认机制/" data-id="ck0jscgnp0004fkvxyi56ybfz"
-         class="article-share-link">Share</a>
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/RabbitMq/">RabbitMq</a></li></ul>
-
-    </footer>
-
-  </div>
-
-  
-
-  
-
-</article>
-
-
-
-      
-        
-
-<article id="post-我是如何在面试别人Spring事务时" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
-  
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h2 itemprop="name">
-      <a class="article-title" href="/2019/09/14/我是如何在面试别人Spring事务时/">我是如何在面试别人Spring事务时</a>
-    </h2>
-  
-  
-
-
-
-
-      </header>
-    
-
-    
-      <div class="article-meta">
-        <a href="/2019/09/14/我是如何在面试别人Spring事务时/" class="article-date">
-  <time datetime="2019-09-14T15:43:00.000Z" itemprop="datePublished">2019-09-14</time>
-</a>
-        
-      </div>
-    
-
-    
-
-    <div class="article-entry" itemprop="articleBody">
-      
-
-
-      
-
-      
-        <p>【转载】文章地址：<a href="https://www.cnblogs.com/lixinjie/p/a-interver-about-spring-tx.html" target="_blank" rel="noopener">https://www.cnblogs.com/lixinjie/p/a-interver-about-spring-tx.html</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/09/14/我是如何在面试别人Spring事务时/" data-id="ck0jscgnv000afkvxn7l2ekov"
-         class="article-share-link">Share</a>
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/事务/">事务</a></li></ul>
-
-    </footer>
-
-  </div>
-
-  
-
-  
-
-</article>
-
-
-
-      
-        
-
-<article id="post-RabbitMq学习（一）Exchange的四种类型和属性" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
-  
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h2 itemprop="name">
-      <a class="article-title" href="/2019/09/14/RabbitMq学习（一）Exchange的四种类型和属性/">RabbitMq学习（一）Exchange的四种类型和属性</a>
-    </h2>
-  
-  
-
-
-
-
-      </header>
-    
-
-    
-      <div class="article-meta">
-        <a href="/2019/09/14/RabbitMq学习（一）Exchange的四种类型和属性/" class="article-date">
-  <time datetime="2019-09-14T04:10:01.000Z" itemprop="datePublished">2019-09-14</time>
-</a>
-        
-      </div>
-    
-
-    
-
-    <div class="article-entry" itemprop="articleBody">
-      
-
-
-      
-
-      
-        <h2 id="一、什么是Exchange"><a href="#一、什么是Exchange" class="headerlink" title="一、什么是Exchange"></a>一、什么是Exchange</h2><p>首先我们要了解到，RabbitMQ 是 AMQP（高级消息队列协议）的标准实现：</p>
-<p><img src="https://img2018.cnblogs.com/blog/1007019/201907/1007019-20190714182714008-145242841.png" alt="img"></p>
-<p>从 AMQP 协议可以看出，Queue、Exchange 和 Binding 构成了 AMQP 协议的核心</p>
-<ul>
-<li>Producer：消息生产者，即投递消息的程序。</li>
-<li>Broker：消息队列服务器实体。<ul>
-<li>Exchange：消息交换机，它指定消息按什么规则，路由到哪个队列。</li>
-<li>Binding：绑定，它的作用就是把 Exchange 和 Queue 按照路由规则绑定起来。</li>
-<li>Queue：消息队列载体，每个消息都会被投入到一个或多个队列。</li>
-</ul>
-</li>
-<li>Consumer：消息消费者，即接受消息的程序。</li>
-</ul>
-<h2 id="二、Exchange的作用"><a href="#二、Exchange的作用" class="headerlink" title="二、Exchange的作用"></a>二、Exchange的作用</h2><pre><code>Exchange的主要作用还是为了解耦。
-
-AMQP 协议中的核心思想就是生产者和消费者的解耦，生产者不直接将消息投递给队列，而是将消息投递给Exchange，然后Exchange根据相应的路由规则投递给队列，最后队列将消息投递到消费者。</code></pre><p>   举个生活中的例子，不是很恰当，但大概意思就是这样。将报纸、投递站、投递员、订阅报纸的用户分别看做生产者、exchange、队列以及消费者。</p>
-<p>   报纸印刷后，会分发到投递站，投递站相当于exchange，会指定分发规则，例如，这一片区的报纸分给某个投递员，投递员拿到这些报纸后，对订阅了该报纸的这一片区的用户进行投递。</p>
-<p>  当然这个队则有多种，例如将区域看做一个规则、将报纸种类看做规则、或者区域加种类混合规则。下面就详细介绍exchange的类型。</p>
-<h2 id="三、Exchange的类型"><a href="#三、Exchange的类型" class="headerlink" title="三、Exchange的类型"></a>三、Exchange的类型</h2><h3 id="3-1-Fanout-Exchange"><a href="#3-1-Fanout-Exchange" class="headerlink" title="3.1    Fanout Exchange"></a>3.1    Fanout Exchange</h3><pre><code>这是最简单的一种交换器，首先要知道一个概念-banding。banding是将exchange和队列绑定的一种队则，java中万物皆对象，所以这个绑定也看做一个对象。
-
-banding中还有个路由键的概念。就是即使交换机与队列进行了绑定，但是在某些场景下，我们不希望与交换机绑定的队列都能收到消息。所以就可以去指定一个路由键。
-
-在进行绑定的时候去指定路由键，在发送消息的时候指定Exchange、指定路由键，才可以正确的将消息发送到队列上。
-
-Fanout Exchange 比较特殊 会忽略路由键的设置，直接将 Message 广播到所有绑定的 Queue 中。</code></pre><h3 id="3-2-Direct-Exchange"><a href="#3-2-Direct-Exchange" class="headerlink" title="3.2  Direct Exchange"></a>3.2  Direct Exchange</h3><pre><code> Direct Exchange 是RabbitMq的模式模式，将Exchange和队列绑定的时候，需要指定路由键，并且在发消息的时候也需要指定路由键，并且路由键必须要完全一致。
-
-![img](https://img2018.cnblogs.com/blog/1007019/201907/1007019-20190714202422998-851186846.png)</code></pre><p>例如指定了路由键是green，那么只有与exchange绑定并且路由键为green的队列才会收到消息。</p>
-<h3 id="3-3-Topic-Exchange"><a href="#3-3-Topic-Exchange" class="headerlink" title="3.3 Topic Exchange"></a>3.3 Topic Exchange</h3><pre><code>与Direct Exchange基本相同，唯一区别在于路由键。Topic exchange 的路由键可以去进行模糊匹配。
-
-\*  表示一个单词的模糊匹配 例如，路由键是   *.apple.big  则表示第一个单词可以是任意的，只要后边单词完全匹配，就可以。
-
-\#  表示完全模糊匹配。例如 路由键是 #.little ，那么 发送消息的路由键可以是 green,apple,little,也就是说前面的单词是任意的。</code></pre><h2 id="四、Exchange的使用"><a href="#四、Exchange的使用" class="headerlink" title="四、Exchange的使用"></a>四、Exchange的使用</h2><pre><code>多说无益，直接撸代码。
-
-就用topic 做演示，其他的模式基本一样。</code></pre><ol>
-<li><h5 id="首先设定一个路由键"><a href="#首先设定一个路由键" class="headerlink" title="首先设定一个路由键"></a>首先设定一个路由键</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">public static final String TOPIC_C = &quot;red.*.*&quot;;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>配置一个topicExchange</p>
-</li>
-</ol>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public TopicExchange topicExchange() &#123;</span><br><span class="line">    return new TopicExchange(EXCHANGE_C);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li><h5 id="配置一个队列"><a href="#配置一个队列" class="headerlink" title="配置一个队列"></a>配置一个队列</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@Bean</span><br><span class="line"> public Queue queueC() &#123;</span><br><span class="line">     return new Queue(QUEUE_C, false); //队列持久</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
-
-<p>第一个参数拜师队列名称，第二个参数表示是否持久化</p>
-</li>
-<li><h5 id="配置bangding"><a href="#配置bangding" class="headerlink" title="配置bangding"></a>配置bangding</h5></li>
-</ol>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@Bean</span><br><span class="line">public Binding bindingC() &#123;</span><br><span class="line">      return </span><br><span class="line">BindingBuilder.bind(queueC()).to(topicExchange()).with(TOPIS_C);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
-
-<p>   第一个参数是Exchange名称，第二个参数是路由键，第三个参数是内容，第四个参数是唯一性id</p>
-<p>   如果是 Fanout Exchange 那么就不用指定路由键传参为null，</p>
-<pre><code>如果是 Direct Exchange，那么路由键就要与指定的路由键完全匹配。</code></pre><ol start="5">
-<li>发送消息代码 </li>
-</ol>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public void sendMsg(String content) &#123;</span><br><span class="line">        CorrelationData correlationId = new CorrelationData(UUID.randomUUID().toString());</span><br><span class="line">        rabbitTemplate.convertAndSend(EXCHANGE_C, &quot;red.cc.dd&quot;, content, correlationId);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<p>这样路由键是  red.<em>.</em>  ，发送消息的路由键是  “red.cc.dd” ，并且因为是Topic Exchange模式，所以该路由键是可以匹配到的。</p>
-<p>完整代码请参考：<a href="https://github.com/zhuanzhiBUG/springboot-rabbitmq.git" target="_blank" rel="noopener">https://github.com/zhuanzhiBUG/springboot-rabbitmq.git</a></p>
-<p>部分参考内容：<a href="https://blog.csdn.net/y4x5M0nivSrJaY3X92c/article/details/80416996" target="_blank" rel="noopener">https://blog.csdn.net/y4x5M0nivSrJaY3X92c/article/details/80416996</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/09/14/RabbitMq学习（一）Exchange的四种类型和属性/" data-id="ck0jscgnt0008fkvxu2vk87oe"
-         class="article-share-link">Share</a>
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/RabbitMq/">RabbitMq</a></li></ul>
-
-    </footer>
-
-  </div>
-
-  
-
-  
-
-</article>
-
-
-
-      
-        
-
-<article id="post-Mysql-乐观锁-和悲观锁" class="article article-type-post" itemscope itemprop="blogPost" data-scroll-reveal>
-  
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h2 itemprop="name">
-      <a class="article-title" href="/2019/09/10/Mysql-乐观锁-和悲观锁/">Mysql 乐观锁 和悲观锁</a>
-    </h2>
-  
-  
-
-
-
-
-      </header>
-    
-
-    
-      <div class="article-meta">
-        <a href="/2019/09/10/Mysql-乐观锁-和悲观锁/" class="article-date">
-  <time datetime="2019-09-10T10:43:00.000Z" itemprop="datePublished">2019-09-10</time>
-</a>
-        
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/mysql/">mysql</a> / <a class="article-category-link" href="/categories/mysql/锁/">锁</a>
-  </div>
-
-      </div>
-    
-
-    
-
-    <div class="article-entry" itemprop="articleBody">
-      
-
-
-      
-
-      
-        <h2 id="date-2019-09-10-18-43-00"><a href="#date-2019-09-10-18-43-00" class="headerlink" title="date: 2019-09-10 18:43:00"></a>date: 2019-09-10 18:43:00</h2><p>&emsp;平时看博客或技术文章的时候，经常被各种锁搞得晕晕乎乎，包括在 自旋锁、可重入锁、公平锁等等 、乐观锁、悲观锁、行锁、表锁、意向锁、排它锁等。前段时间终于把Java多线程相关的锁有机会学习了一遍。现在开始整理mysql相关的锁概念。先从乐观锁和悲观锁开始聊聊。<br>&emsp; 首先要知道，乐观锁和悲观锁不是真实存在的锁，只是两种抽象概念性的东西，就相当于Java中的接口，只是给出了一个定义，一种思想。可以根据这种思想去实现。</p>
-<h2 id="一、悲观锁："><a href="#一、悲观锁：" class="headerlink" title="一、悲观锁："></a>一、悲观锁：</h2><h3 id="1-1基本概念以及用法"><a href="#1-1基本概念以及用法" class="headerlink" title="1.1基本概念以及用法"></a>1.1基本概念以及用法</h3><p>&emsp; 悲观锁是数据库层面实现的锁机制，他是指其他线程对本数据的修改是持有保守态度。<br>&emsp; 在对数据操作前，首先要获取锁，保证其他在修改期间，其他线程对数据不能进行修改。<br>&emsp; java 中的Synsynchronized 就是悲观锁思想的一种体现。<br>mysql中，悲观锁的实现方式是：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">使用语句</span><br><span class="line">select *  ...... forupdate</span><br></pre></td></tr></table></figure>
-
-<p>&emsp; 如果能正确获取锁，那么其他线程要对于这条数据做修改，必须等待这个事务提交释放锁之后，才会执行。<br>下面举个栗子：<br>&emsp; 创建一张表，并开两个查询窗口。都关闭自动提交。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">建表语句：</span><br><span class="line">DROP TABLE IF EXISTS `lock_demo`;</span><br><span class="line">CREATE TABLE `lock_demo` (</span><br><span class="line">  `id` bigint(20) NOT NULL AUTO_INCREMENT,</span><br><span class="line">  `count` int(11) DEFAULT NULL,</span><br><span class="line">  `version` int(255) DEFAULT NULL,</span><br><span class="line">  PRIMARY KEY (`id`)</span><br><span class="line">) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;</span><br><span class="line"></span><br><span class="line">INSERT INTO `lock_demo` VALUES (&apos;1&apos;, &apos;1&apos;, &apos;0&apos;);</span><br></pre></td></tr></table></figure>
-
-
-
-<p>窗口1，加锁</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">//查询窗口1</span><br><span class="line">set autocommit = 0; </span><br><span class="line"></span><br><span class="line">SELECT * from lock_demo where id = 1 for update;</span><br></pre></td></tr></table></figure>
-
-<p>&emsp; 窗口2 ,关闭自动提交，进行数据查询,可以查询出数据，表明悲观锁对于其他线程数据查询是不受影响的</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">set autocommit = 0; </span><br><span class="line">SELECT * from lock_demo where id = 1</span><br></pre></td></tr></table></figure>
-
-<p>&emsp;当窗口 2 进行加锁或更新的时候，那么就会报错，因为一直获取不到锁，就会提示超时。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">//另一个线程进行加锁</span><br><span class="line">SELECT * from lock_demo where id = 1 for update;</span><br><span class="line"></span><br><span class="line">//另一个线程更新</span><br><span class="line">update lock_demo set version = 2 WHERE id = 1;</span><br><span class="line"></span><br><span class="line">错误提示信息：</span><br><span class="line">[Err] 1205 - Lock wait timeout exceeded; try restarting transaction</span><br><span class="line">当前线程提交事务后，其他线程才能进行更新。</span><br></pre></td></tr></table></figure>
-
-<h3 id="1-2悲观锁的两种模式"><a href="#1-2悲观锁的两种模式" class="headerlink" title="1.2悲观锁的两种模式"></a>1.2悲观锁的两种模式</h3><p>这里引出了悲观锁涉及到的另外两个锁概念，它们就是共享锁与排它锁。</p>
-<p>共享锁和排它锁是悲观锁的不同的实现，它俩都属于悲观锁的范畴。</p>
-<p>共享锁顾名思义，共享指的是不同事务对同一个数据可以共享一把锁，也就是说不同事务都可以通过加共享锁或者不加锁的读取读数据。  </p>
-<p>但是其他事物不能对改行数据加排他锁。参考排它锁的定义。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">语法： </span><br><span class="line"> select * from table lock in share mode</span><br></pre></td></tr></table></figure>
-
-<p>排他锁，是指对条数据加排它锁后，其他事务就不能对当前数据加锁，包括共享锁和排它锁都不可以。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">语法：</span><br><span class="line">select * from table for update</span><br></pre></td></tr></table></figure>
-
-<p>innodb 存储在执行修改、删除的时候，都是会默认增加排它锁。</p>
-<p>在查询的时候，是不加任何锁的，注意不是加了共享锁，<strong>是不加任何锁的</strong>。所以才会有在第一个事务中加排它锁的时候，第二个事物依旧可以通过 select * …… 的方式查询。</p>
-<p>但是不能再加锁，共享锁和排它锁都不行，也就是执行    select * from table for update      select * from table lock in share mode  都不行，也就是执行update 和delete 操作都是不行的。</p>
-<p>那么插入数据是是否受影响呢，答案是肯定不受影响。</p>
-<p>首先，共享锁和排它锁的粒度是行，也就是针对一行数据。例如你再id = 1的数据上加了排他锁，那么id = 2的数据依旧可以更新删除，更不用说去新增一条数据了。</p>
-<h2 id="二-乐观锁"><a href="#二-乐观锁" class="headerlink" title="二. 乐观锁"></a>二. 乐观锁</h2><p>  乐观锁表示对数据的更新持有乐观态度，表示不会造成冲突，所以一般是先进行业务处理，在对数据更新的时候再去判定是否有冲突。</p>
-<p>  乐观锁是用户自己实现的，不是数据库层面的锁。<br>  原理就是：  </p>
-<pre><code>在表字段中加一个version 字段。每次更新的时候去检查当前查询的数据中的version 与数据库中的version是否相同，如果不同则不进行更新，相同则进行更新，然后将version 加1</code></pre><p>   类似的可以使时间戳实现相同的功能。</p>
-<h2 id="三-总结"><a href="#三-总结" class="headerlink" title="三. 总结"></a>三. 总结</h2><h3 id="3-1-实现方式"><a href="#3-1-实现方式" class="headerlink" title="3.1 实现方式"></a>3.1 实现方式</h3><p>悲观锁是数据库级别实现的，直接使用</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * .....  for update 就表示对当前数据加锁。</span><br></pre></td></tr></table></figure>
-
-<p>乐观锁是需要自己实现，一般是通过版本控制或者加时间戳等方式实现。</p>
-<h3 id="3-2-适用场景"><a href="#3-2-适用场景" class="headerlink" title="3.2 适用场景"></a>3.2 适用场景</h3><p>乐观锁在不发生取锁失败的情况下开销比悲观锁小，但是一旦发生失败回滚开销则比较大，因此适合用在取锁失败概率比较小的场景，可以提升系统并发性能</p>
-<p>乐观锁还适用于一些比较特殊的场景，例如在业务操作过程中无法和数据库保持连接等悲观锁无法适用的地方</p>
-<p>参考文章：<a href="https://www.cnblogs.com/cyhbyw/p/8869855.html" target="_blank" rel="noopener">https://www.cnblogs.com/cyhbyw/p/8869855.html</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/09/10/Mysql-乐观锁-和悲观锁/" data-id="ck0jscgnn0002fkvx5rpnmopg"
-         class="article-share-link">Share</a>
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li></ul>
-
-    </footer>
-
-  </div>
-
-  
-
-  
-
-</article>
-
-
-
-      
-  </article>
-  
-
-  
-</section>
-</div>
-
-  <footer class="footer">
-  <div class="outer">
-    <div class="float-right">
-      <ul class="list-inline">
-  
-    <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
-  
-</ul>
-    </div>
-    <ul class="list-inline">
-      <li>&copy; 2019 </li>
-      <li>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></li>
-      <li>Theme  <a href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li>
-    </ul>
-  </div>
-</footer>
-
-</main>
-
-  <aside class="sidebar">
-    
-    <button class="navbar-toggle"></button>
-<nav class="navbar">
-  
-    <div class="logo">
-      <a href="/"><img src="/images/hexo.svg" alt=""></a>
-    </div>
-  
-  <ul class="nav nav-main">
-    
-      <li class="nav-item">
-        <a class="nav-item-link" href="/">主页</a>
-      </li>
-    
-      <li class="nav-item">
-        <a class="nav-item-link" href="/archives">归档</a>
-      </li>
-    
-      <li class="nav-item">
-        <a class="nav-item-link" href="/categories">分类</a>
-      </li>
-    
-      <li class="nav-item">
-        <a class="nav-item-link" href="/tags">标签</a>
-      </li>
-    
-      <li class="nav-item">
-        <a class="nav-item-link" href="/about">关于</a>
-      </li>
-    
-    <li class="nav-item">
-      <a class="nav-item-link nav-item-search" title="Search">
-        <i class="fe fe-search"></i>
-        搜索
+      <a href="/" class="current">
+        Home
       </a>
-    </li>
-  </ul>
-</nav>
-<nav class="navbar navbar-bottom">
-  <ul class="nav">
-    <li class="nav-item">
-      <div class="totop" id="totop">
-  <i class="fe fe-rocket"></i>
-</div>
-    </li>
-    <li class="nav-item">
       
-        <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
-          <i class="fe fe-feed"></i>
-        </a>
+      <a href="/archives" class>
+        Archives
+      </a>
       
+      <a href="/about" class>
+        About
+      </a>
+      
+    </div>
+    <div id="container">
+      <div id="main">
+        <div class="navbar">
+          <div class="toggle">
+            <span class="iconfont icon-menu toggle-icon"></span>
+          </div>
+          <div class="search">
+            <div class="input-warp">
+              <!-- <span class="iconfont icon-sousuo"></span> -->
+              <input type="text" name class="st-default-search-input" id="site-search" placeholder="Search Keys">
+            </div>
+          </div>
+        </div>
+        <div class="content">
+          
+<div class="posts">
+  <ul>
+     
+    <li class="item">
+      
+      <div class="describe">
+        <div class="title">
+          <a href="/2019/09/15/RabbitMq学习（二）RabbitMQ的消息确认机制/">RabbitMq学习（二）RabbitMQ的消息确认机制</a>
+        </div>
+        <div class="date">
+          <span class="iconfont icon-time-circle"></span>
+          <span>19/09/15</span>
+        </div>
+        
+        <div class="meta">
+          <div class="l">
+            <div class="warp">
+              
+              <span class="iconfont icon-folder"></span>
+              <span class="desp">
+                
+              </span>
+              
+            </div>
+
+            
+            <div class="warp">
+              <span class="iconfont icon-tag1"></span>
+              <span class="desp">
+                 
+                <a href="/tags/RabbitMq">RabbitMq</a>
+                 
+              </span>
+            </div>
+            
+            <div class="warp">
+              <div class="share" data-url="/2019/09/15/RabbitMq学习（二）RabbitMQ的消息确认机制/">
+                <span class="iconfont icon-share"></span>
+              </div>
+              <div class="desp share" data-url="/2019/09/15/RabbitMq学习（二）RabbitMQ的消息确认机制/">
+                <a href="javascript:void(0);">分享</a>
+              </div>
+            </div>
+          </div>
+          <div class="r">
+            <a href="/2019/09/15/RabbitMq学习（二）RabbitMQ的消息确认机制/">Read More</a>
+          </div>
+        </div>
+      </div>
     </li>
+     
+    <li class="item">
+      
+      <div class="describe">
+        <div class="title">
+          <a href="/2019/09/14/我是如何在面试别人Spring事务时/">我是如何在面试别人Spring事务时</a>
+        </div>
+        <div class="date">
+          <span class="iconfont icon-time-circle"></span>
+          <span>19/09/14</span>
+        </div>
+        
+        <div class="meta">
+          <div class="l">
+            <div class="warp">
+              
+              <span class="iconfont icon-folder"></span>
+              <span class="desp">
+                
+              </span>
+              
+            </div>
+
+            
+            <div class="warp">
+              <span class="iconfont icon-tag1"></span>
+              <span class="desp">
+                 
+                <a href="/tags/事务">事务</a>
+                 
+              </span>
+            </div>
+            
+            <div class="warp">
+              <div class="share" data-url="/2019/09/14/我是如何在面试别人Spring事务时/">
+                <span class="iconfont icon-share"></span>
+              </div>
+              <div class="desp share" data-url="/2019/09/14/我是如何在面试别人Spring事务时/">
+                <a href="javascript:void(0);">分享</a>
+              </div>
+            </div>
+          </div>
+          <div class="r">
+            <a href="/2019/09/14/我是如何在面试别人Spring事务时/">Read More</a>
+          </div>
+        </div>
+      </div>
+    </li>
+     
+    <li class="item">
+      
+      <div class="describe">
+        <div class="title">
+          <a href="/2019/09/14/RabbitMq学习（一）Exchange的四种类型和属性/">RabbitMq学习（一）Exchange的四种类型和属性</a>
+        </div>
+        <div class="date">
+          <span class="iconfont icon-time-circle"></span>
+          <span>19/09/14</span>
+        </div>
+        
+        <div class="meta">
+          <div class="l">
+            <div class="warp">
+              
+              <span class="iconfont icon-folder"></span>
+              <span class="desp">
+                
+              </span>
+              
+            </div>
+
+            
+            <div class="warp">
+              <span class="iconfont icon-tag1"></span>
+              <span class="desp">
+                 
+                <a href="/tags/RabbitMq">RabbitMq</a>
+                 
+              </span>
+            </div>
+            
+            <div class="warp">
+              <div class="share" data-url="/2019/09/14/RabbitMq学习（一）Exchange的四种类型和属性/">
+                <span class="iconfont icon-share"></span>
+              </div>
+              <div class="desp share" data-url="/2019/09/14/RabbitMq学习（一）Exchange的四种类型和属性/">
+                <a href="javascript:void(0);">分享</a>
+              </div>
+            </div>
+          </div>
+          <div class="r">
+            <a href="/2019/09/14/RabbitMq学习（一）Exchange的四种类型和属性/">Read More</a>
+          </div>
+        </div>
+      </div>
+    </li>
+     
+    <li class="item">
+      
+      <div class="describe">
+        <div class="title">
+          <a href="/2019/09/10/Mysql-乐观锁-和悲观锁/">Mysql 乐观锁 和悲观锁</a>
+        </div>
+        <div class="date">
+          <span class="iconfont icon-time-circle"></span>
+          <span>19/09/10</span>
+        </div>
+        
+        <div class="meta">
+          <div class="l">
+            <div class="warp">
+              
+              <span class="iconfont icon-folder"></span>
+              <span class="desp">
+                 
+                <a href="/categories/mysql">mysql</a>
+                  
+                <a href="/categories/锁">锁</a>
+                 
+              </span>
+              
+            </div>
+
+            
+            <div class="warp">
+              <span class="iconfont icon-tag1"></span>
+              <span class="desp">
+                 
+                <a href="/tags/mysql">mysql</a>
+                 
+              </span>
+            </div>
+            
+            <div class="warp">
+              <div class="share" data-url="/2019/09/10/Mysql-乐观锁-和悲观锁/">
+                <span class="iconfont icon-share"></span>
+              </div>
+              <div class="desp share" data-url="/2019/09/10/Mysql-乐观锁-和悲观锁/">
+                <a href="javascript:void(0);">分享</a>
+              </div>
+            </div>
+          </div>
+          <div class="r">
+            <a href="/2019/09/10/Mysql-乐观锁-和悲观锁/">Read More</a>
+          </div>
+        </div>
+      </div>
+    </li>
+    
   </ul>
-</nav>
-<div class="search-form-wrap">
-  <div class="local-search local-search-plugin">
-  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
-  <div id="local-search-result" class="local-search-result"></div>
 </div>
+
+<div class="paginator">
+  <span class="page-number current">1</span>
 </div>
-  </aside>
-  <script src="/js/jquery-2.0.3.min.js"></script>
-<script src="/js/jquery.justifiedGallery.min.js"></script>
-<script src="/js/lazyload.min.js"></script>
-<script src="/js/busuanzi-2.3.pure.min.js"></script>
 
-  <script src="/fancybox/jquery.fancybox.min.js"></script>
-
-
-
-
-<script src="/js/ocean.js"></script>
-
-</body>
+        </div>
+        <footer>
+          <div class="copyright">
+            ©2019 <a href="http://yoursite.com">渣渣辉</a>. Powered by
+            <a href="https://hexo.io">hexo</a> &
+            <a href="https://github.com/huiblog">zhazhahui</a>
+          </div>
+          
+        </footer>
+      </div>
+      <div id="card-wrap">
+        <div class="card">
+          <div class="logo-widget">
+            <div class="author">
+              渣渣辉
+            </div>
+            <div class="logo" style="background-image: url('/images/logo.jpeg')"></div>
+          </div>
+          
+          <div class="follow-widget">
+            
+            <a href="https://github.com/huiblog" target="_block">
+              <span class="iconfont icon-github"></span>
+            </a>
+             
+            <a href="/atom.xml" target="_block">
+              <span class="iconfont icon-rss"></span>
+            </a>
+            
+          </div>
+          
+          <div class="category-widget">
+            <div class="title">
+              <span>Categories</span>
+              <span><a href="/archives">···</a></span>
+            </div>
+            <div class="list">
+               
+              <a href="/categories/mysql/">mysql</a>
+                
+              <a href="/categories/mysql/锁/">锁</a>
+               
+            </div>
+          </div>
+          <div class="tag-widget">
+            <div class="title">
+              <span>Tag Cloud</span>
+              <span><a href>···</a></span>
+            </div>
+            <div class="tag-cloud">
+              <a href="/tags/RabbitMq/" style="font-size: 20px; color: #4a4a4a">RabbitMq</a> <a href="/tags/mysql/" style="font-size: 13px; color: #4a4a4a">mysql</a> <a href="/tags/事务/" style="font-size: 13px; color: #4a4a4a">事务</a>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+    <!-- swiftype -->
+    
+    <!-- swiftype -->
+  </body>
+  
+  <p id="theme_str" hidden>{&#34;title&#34;:null,&#34;subtitle&#34;:null,&#34;description&#34;:null,&#34;author&#34;:&#34;渣渣辉&#34;,&#34;language&#34;:&#34;zh&#34;,&#34;timezone&#34;:null,&#34;url&#34;:&#34;http://yoursite.com&#34;,&#34;root&#34;:&#34;/&#34;,&#34;permalink&#34;:&#34;:year/:month/:day/:title/&#34;,&#34;permalink_defaults&#34;:null,&#34;source_dir&#34;:&#34;source&#34;,&#34;public_dir&#34;:&#34;public&#34;,&#34;tag_dir&#34;:&#34;tags&#34;,&#34;archive_dir&#34;:&#34;archives&#34;,&#34;category_dir&#34;:&#34;categories&#34;,&#34;code_dir&#34;:&#34;downloads/code&#34;,&#34;i18n_dir&#34;:&#34;:lang&#34;,&#34;skip_render&#34;:null,&#34;new_post_name&#34;:&#34;:title.md&#34;,&#34;default_layout&#34;:&#34;post&#34;,&#34;titlecase&#34;:false,&#34;external_link&#34;:true,&#34;filename_case&#34;:0,&#34;render_drafts&#34;:false,&#34;post_asset_folder&#34;:true,&#34;relative_link&#34;:false,&#34;future&#34;:true,&#34;highlight&#34;:{&#34;enable&#34;:true,&#34;auto_detect&#34;:false,&#34;line_number&#34;:true,&#34;tab_replace&#34;:null,&#34;first_line_number&#34;:&#34;always1&#34;},&#34;default_category&#34;:&#34;uncategorized&#34;,&#34;category_map&#34;:null,&#34;tag_map&#34;:null,&#34;date_format&#34;:&#34;YYYY-MM-DD&#34;,&#34;time_format&#34;:&#34;HH:mm:ss&#34;,&#34;per_page&#34;:10,&#34;pagination_dir&#34;:&#34;page&#34;,&#34;theme&#34;:&#34;hexo-theme-huhu&#34;,&#34;deploy&#34;:{&#34;type&#34;:&#34;git&#34;,&#34;repo&#34;:&#34;https://github.com/huiblog/github.io.git&#34;,&#34;branch&#34;:&#34;master&#34;},&#34;ignore&#34;:[],&#34;keywords&#34;:null,&#34;introductionstart&#34;:null,&#34;introductionend&#34;:null,&#34;index_generator&#34;:{&#34;per_page&#34;:10,&#34;order_by&#34;:&#34;-date&#34;,&#34;path&#34;:&#34;&#34;},&#34;admin&#34;:{&#34;deployCommand&#34;:&#34;‘hexo-pubish.bat’&#34;},&#34;category_generator&#34;:{&#34;per_page&#34;:10},&#34;archive_generator&#34;:{&#34;per_page&#34;:10,&#34;yearly&#34;:true,&#34;monthly&#34;:true,&#34;daily&#34;:false},&#34;search&#34;:{&#34;path&#34;:&#34;search.xml&#34;,&#34;field&#34;:&#34;post&#34;,&#34;format&#34;:&#34;html&#34;,&#34;limit&#34;:&#34;10000&#34;},&#34;tag_generator&#34;:{&#34;per_page&#34;:10},&#34;server&#34;:{&#34;port&#34;:4000,&#34;log&#34;:false,&#34;compress&#34;:false,&#34;header&#34;:true},&#34;marked&#34;:{&#34;gfm&#34;:true,&#34;pedantic&#34;:false,&#34;sanitize&#34;:false,&#34;tables&#34;:true,&#34;breaks&#34;:true,&#34;smartLists&#34;:true,&#34;smartypants&#34;:true,&#34;modifyAnchors&#34;:&#34;&#34;,&#34;autolink&#34;:true},&#34;menu&#34;:{&#34;home&#34;:&#34;/&#34;,&#34;archives&#34;:&#34;/archives&#34;,&#34;about&#34;:&#34;/about&#34;},&#34;logo&#34;:&#34;/images/logo.png&#34;,&#34;categories_max&#34;:5,&#34;tags_max&#34;:10,&#34;favicon&#34;:&#34;/images/favicon.ico&#34;,&#34;site_search&#34;:true,&#34;rss&#34;:&#34;/atom.xml&#34;,&#34;follow&#34;:{&#34;github&#34;:&#34;https://github.com/huiblog&#34;},&#34;search_url&#34;:&#34;/search.xml&#34;,&#34;site_icp&#34;:&#34;&#34;,&#34;site_friends&#34;:{&#34;房间里的小猫咪&#34;:&#34;http://baidu.com&#34;},&#34;share&#34;:[&#34;weibo&#34;,&#34;weixin&#34;,&#34;qqkongjian&#34;,&#34;QQ&#34;,&#34;douban&#34;,&#34;facebook&#34;,&#34;twitter&#34;,&#34;google&#34;],&#34;cdn_module&#34;:{&#34;av_min&#34;:&#34;https://cdn.jsdelivr.net/npm/leancloud-storage/dist/av-min&#34;,&#34;pjax&#34;:&#34;https://cdn.bootcss.com/jquery.pjax/2.0.1/jquery.pjax.min&#34;,&#34;jquery&#34;:&#34;https://cdn.bootcss.com/jquery/3.4.1/jquery.min&#34;,&#34;confirm&#34;:&#34;https://cdn.bootcss.com/jquery-confirm/3.3.4/jquery-confirm.min&#34;,&#34;fancybox&#34;:&#34;https://cdn.bootcss.com/fancybox/3.5.7/jquery.fancybox.min&#34;,&#34;algoliasearch&#34;:&#34;https://cdn.jsdelivr.net/npm/algoliasearch@3.33.0/dist/algoliasearchLite.min&#34;},&#34;baidu_push&#34;:true,&#34;reward&#34;:{&#34;weixin&#34;:&#34;images/weixin.png&#34;,&#34;zhifubao&#34;:&#34;images/zhifubao.png&#34;},&#34;service_worker&#34;:{&#34;open&#34;:false}}</p>
 </html>
+<script type="text/javascript">
+  window.addEventListener('load', function() {
+    ;(adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: '',
+      enable_page_level_ads: true
+    })
+
+    window.THEME_CONFIG = JSON.parse(document.getElementById('theme_str').innerText)
+    window.loadJs = function(d, m, a) {
+      var c = document.getElementsByTagName('head')[0] || document.head || document.documentElement
+      var b = document.createElement('script')
+      b.defer = true
+      b.setAttribute('type', 'text/javascript')
+      b.setAttribute('charset', 'UTF-8')
+      b.setAttribute('async', 'true')
+      b.setAttribute('src', d)
+      m && b.setAttribute('data-main', '/scripts/app')
+      if (typeof a === 'function') {
+        if (window.attachEvent) {
+          b.onreadystatechange = function() {
+            var e = b.readyState
+            if (e === 'loaded' || e === 'complete') {
+              b.onreadystatechange = null
+              a()
+            }
+          }
+        } else {
+          b.onload = a
+        }
+      }
+      c.appendChild(b)
+    }
+    window.loadJs &&
+      window.loadJs('https://cdn.bootcss.com/require.js/2.3.6/require.min.js', true, function() {
+        require.config({
+          paths: {
+            // site
+            util: 'util',
+            share: 'share',
+            search: 'search',
+            iconfont: 'iconfont',
+            registerSW: 'registerSW',
+            valine: ['cdn/Valine.min'],
+
+            // cdn
+            av: ['https://cdn.jsdelivr.net/npm/leancloud-storage/dist/av-min', 'cdn/av-min'],
+            pjax: ['https://cdn.bootcss.com/jquery.pjax/2.0.1/jquery.pjax.min', 'cdn/pjax.min'],
+            jquery: ['https://cdn.bootcss.com/jquery/3.4.1/jquery.min', 'cdn/jquery.min'],
+            confirm: ['https://cdn.bootcss.com/jquery-confirm/3.3.4/jquery-confirm.min', 'cdn/jquery.confirm.min'],
+            fancybox: ['https://cdn.bootcss.com/fancybox/3.5.7/jquery.fancybox.min', 'cdn/jquery.fancybox.min'],
+            algoliasearch: ['https://cdn.jsdelivr.net/npm/algoliasearch@3.33.0/dist/algoliasearchLite.min', 'cdn/algoliasearchLite.min']
+          },
+
+          map: {
+            '*': {
+              css: 'https://cdn.bootcss.com/require-css/0.1.10/css.min.js'
+            }
+          },
+
+          shim: {
+            fancybox: {
+              deps: ['css!https://cdn.bootcss.com/fancybox/3.5.7/jquery.fancybox.min.css']
+            },
+            confirm: {
+              deps: ['css!https://cdn.bootcss.com/jquery-confirm/3.3.4/jquery-confirm.min.css']
+            }
+          },
+
+          // 加载超时
+          waitSeconds: 3
+        })
+      })
+  })
+</script>
+
+<script>
+  ;(function() {
+    var bp = document.createElement('script')
+    var curProtocol = window.location.protocol.split(':')[0]
+    if (curProtocol === 'https') {
+      bp.src = 'https://zz.bdstatic.com/linksubmit/push.js'
+    } else {
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js'
+    }
+    var s = document.getElementsByTagName('script')[0]
+    s.parentNode.insertBefore(bp, s)
+  })()
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/algoliasearch@3.33.0/dist/algoliasearchLite.min.js"></script>
+<script></script>
