@@ -12,4 +12,16 @@
         <tag>mysql</tag>
       </tags>
   </entry>
+  <entry>
+    <title><![CDATA[Mysql 乐观锁 和悲观锁]]></title>
+    <url>%2F2019%2F09%2F10%2FMysql-%E4%B9%90%E8%A7%82%E9%94%81-%E5%92%8C%E6%82%B2%E8%A7%82%E9%94%81%20-%20%E5%89%AF%E6%9C%AC%2F</url>
+    <content type="text"><![CDATA[date: 2019-09-10 18:43:00&emsp;平时看博客或技术文章的时候，经常被各种锁搞得晕晕乎乎，包括在 自旋锁、可重入锁、公平锁等等 、乐观锁、悲观锁、行锁、表锁、意向锁、排它锁等。前段时间终于把Java多线程相关的锁有机会学习了一遍。现在开始整理mysql相关的锁概念。先从乐观锁和悲观锁开始聊聊。&emsp; 首先要知道，乐观锁和悲观锁不是真实存在的锁，只是两种抽象概念性的东西，就相当于Java中的接口，只是给出了一个定义，一种思想。可以根据这种思想去实现。 一、悲观锁：1.1基本概念以及用法&emsp; 悲观锁是数据库层面实现的锁机制，他是指其他线程对本数据的修改是持有保守态度。&emsp; 在对数据操作前，首先要获取锁，保证其他在修改期间，其他线程对数据不能进行修改。&emsp; java 中的Synsynchronized 就是悲观锁思想的一种体现。mysql中，悲观锁的实现方式是： 12使用语句select * ...... forupdate &emsp; 如果能正确获取锁，那么其他线程要对于这条数据做修改，必须等待这个事务提交释放锁之后，才会执行。下面举个栗子：&emsp; 创建一张表，并开两个查询窗口。都关闭自动提交。 12345678910建表语句：DROP TABLE IF EXISTS `lock_demo`;CREATE TABLE `lock_demo` ( `id` bigint(20) NOT NULL AUTO_INCREMENT, `count` int(11) DEFAULT NULL, `version` int(255) DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;INSERT INTO `lock_demo` VALUES (&apos;1&apos;, &apos;1&apos;, &apos;0&apos;); 窗口1，加锁 1234//查询窗口1set autocommit = 0; SELECT * from lock_demo where id = 1 for update; &emsp; 窗口2 ,关闭自动提交，进行数据查询,可以查询出数据，表明悲观锁对于其他线程数据查询是不受影响的 12set autocommit = 0; SELECT * from lock_demo where id = 1 &emsp;当窗口 2 进行加锁或更新的时候，那么就会报错，因为一直获取不到锁，就会提示超时。 123456789//另一个线程进行加锁SELECT * from lock_demo where id = 1 for update;//另一个线程更新update lock_demo set version = 2 WHERE id = 1;错误提示信息：[Err] 1205 - Lock wait timeout exceeded; try restarting transaction当前线程提交事务后，其他线程才能进行更新。 1.2悲观锁的两种模式这里引出了悲观锁涉及到的另外两个锁概念，它们就是共享锁与排它锁。 共享锁和排它锁是悲观锁的不同的实现，它俩都属于悲观锁的范畴。 共享锁顾名思义，共享指的是不同事务对同一个数据可以共享一把锁，也就是说不同事务都可以通过加共享锁或者不加锁的读取读数据。 但是其他事物不能对改行数据加排他锁。参考排它锁的定义。 12语法： select * from table lock in share mode 排他锁，是指对条数据加排它锁后，其他事务就不能对当前数据加锁，包括共享锁和排它锁都不可以。 12语法：select * from table for update innodb 存储在执行修改、删除的时候，都是会默认增加排它锁。 在查询的时候，是不加任何锁的，注意不是加了共享锁，是不加任何锁的。所以才会有在第一个事务中加排它锁的时候，第二个事物依旧可以通过 select * …… 的方式查询。 但是不能再加锁，共享锁和排它锁都不行，也就是执行 select * from table for update select * from table lock in share mode 都不行，也就是执行update 和delete 操作都是不行的。 那么插入数据是是否受影响呢，答案是肯定不受影响。 首先，共享锁和排它锁的粒度是行，也就是针对一行数据。例如你再id = 1的数据上加了排他锁，那么id = 2的数据依旧可以更新删除，更不用说去新增一条数据了。 二. 乐观锁 乐观锁表示对数据的更新持有乐观态度，表示不会造成冲突，所以一般是先进行业务处理，在对数据更新的时候再去判定是否有冲突。 乐观锁是用户自己实现的，不是数据库层面的锁。 原理就是： 在表字段中加一个version 字段。每次更新的时候去检查当前查询的数据中的version 与数据库中的version是否相同，如果不同则不进行更新，相同则进行更新，然后将version 加1 类似的可以使时间戳实现相同的功能。 三. 总结3.1 实现方式悲观锁是数据库级别实现的，直接使用 1select * ..... for update 就表示对当前数据加锁。 乐观锁是需要自己实现，一般是通过版本控制或者加时间戳等方式实现。 3.2 适用场景乐观锁在不发生取锁失败的情况下开销比悲观锁小，但是一旦发生失败回滚开销则比较大，因此适合用在取锁失败概率比较小的场景，可以提升系统并发性能 乐观锁还适用于一些比较特殊的场景，例如在业务操作过程中无法和数据库保持连接等悲观锁无法适用的地方 参考文章：https://www.cnblogs.com/cyhbyw/p/8869855.html]]></content>
+      <categories>
+        <category>mysql</category>
+        <category>锁</category>
+      </categories>
+      <tags>
+        <tag>mysql</tag>
+      </tags>
+  </entry>
 </search>
