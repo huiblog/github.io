@@ -115,7 +115,7 @@ define([
 
     // 咖啡
     $(document).on('click', '#reward-button', function(e) {
-      $('#qr').toggle('1000')
+      $('#qr').toggle(1000)
     })
 
     // 顶部滚动进度条
