@@ -1,97 +1,64 @@
 <!DOCTYPE html>
 <html>
-  <head><meta name="generator" content="Hexo 3.9.0">
-    
-    <meta charset="utf-8">
-    <meta name="baidu-site-verification" content="vvVgSQUzPU">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="keywords" content>
-     
-    <meta name="description" content>
-    
-    <title>
-      RabbitMq学习（二）RabbitMQ的消息确认机制渣渣辉
-    </title>
-    <link rel="manifest" href="/manifest.json">
-    <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="/style/style.css">
-  </head>
-  <body>
-    <div id="fixed-menu">
-      <span class="iconfont icon-arrowup"></span>
-    </div>
-    <div id="progress">
-      <div class="line"></div>
-    </div>
-    <!-- <div id="search-wrap">
-      <input type="text" placeholder="Search Keys"/>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>RabbitMq学习（二）RabbitMQ的消息确认机制 | null</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="渣渣辉">
+  <meta name="keywords" content>
+  <meta name="description" content>
+  <script id="hexo-configurations">
+  var CONFIG = {
+    root: '/',
+    theme: 'hexo-theme-lx',
+    version: '1.4.5',
+    localsearch:{
+      "enable": false,
+      "trigger": "auto",
+      "top_n_per_article": 1,
+      "unescape": false,
+      "preload": false
+      },
+    path: '-'
+  };
+</script>
 
-      <div class="result"></div>
-    </div> -->
-    <div id="head">
-      
-      <a href="/" class>
-        Home
-      </a>
-      
-      <a href="/archives" class>
-        Archives
-      </a>
-      
-      <a href="/about" class>
-        About
-      </a>
-      
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/js/jquery.min.js"></script>
+  <script src="/js/jquery.jside.menu.js"></script>
+	<script>
+	$(document).ready(function(){
+	$(".menu-container").jSideMenu({
+	    jSidePosition: "position-right",
+	    jSideSticky: true,
+	    jSideSkin: "endless-river",
+	     });
+	}); 
+	</script>
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:300|Noto+Serif+SC&amp;display=swap">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/font-awesome@4/css/font-awesome.min.css">
+</head>
+<body>
+<div class="single">
+<div id="page">
+<div id="lx-aside" style="background-image: url(/images/page-cover.jpg)" data-stellar-background-ratio="0.5">
+  <div class="overlay">
+  <div class="page-title">
+    <div class="avatar"><a href="/"><img src="/images/person_1.jpg"></a></div>
+    <span>2019-09-15</span>
+    <h2>RabbitMq学习（二）RabbitMQ的消息确认机制</h2>
+    <div class="tags"><i class="fa fa-tag"></i><a class="tag-link" href="/tags/RabbitMq/">RabbitMq</a></div>
     </div>
-    <div id="container">
-      <div id="main">
-        <div class="navbar">
-          <div class="toggle">
-            <span class="iconfont icon-menu toggle-icon"></span>
-          </div>
-          <div class="search">
-            <div class="input-warp">
-              <!-- <span class="iconfont icon-sousuo"></span> -->
-              <input type="text" name class="st-default-search-input" id="site-search" placeholder="Search Keys">
-            </div>
-          </div>
-        </div>
-        <div class="content">
-          <article class="post-entry">
-    <div class="header">
-      <div class="title">RabbitMq学习（二）RabbitMQ的消息确认机制</div>
-      <div class="meta">
-        <span class="item">
-          <span class="iconfont icon-time-circle"></span>
-          <span>2019/09/15</span>
-        </span>
-
-        
-        
-         
-          <span class="item">
-            <span class="iconfont icon-tag1"></span>
-            <span>
-                
-                  
-                    <a href="/tags/RabbitMq">RabbitMq</a>
-                  
-                
-            </span>
-          </span>
-         
-
-        
-          <span class="item leancloud-visitors" id="/2019/09/15/RabbitMq学习（二）RabbitMQ的消息确认机制/" data-flag-title="RabbitMq学习（二）RabbitMQ的消息确认机制">
-            <span class="iconfont icon-eye1"></span>
-            <span class="leancloud-visitors-count"></span>
-          </span>
-        
-      </div>
+</div>
+</div>
+<div id="lx-main-content">
+  <div class="lx-post">
+    <div class="lx-entry padding">
       <div>
-      </div>
-    </div>
-    <h2 id="一-为什么有消息确认机制"><a href="#一-为什么有消息确认机制" class="headerlink" title="一. 为什么有消息确认机制"></a>一. 为什么有消息确认机制</h2><p> 在RabbitMq中，一个消息从产生到最终的消息接受，中间大致会有三个环节，首先是消息到达交换机、然后是消息通过交换机到达队列，最后消费者消费绑定的队列消息。</p>
+        <h2 id="一-为什么有消息确认机制"><a href="#一-为什么有消息确认机制" class="headerlink" title="一. 为什么有消息确认机制"></a>一. 为什么有消息确认机制</h2><p> 在RabbitMq中，一个消息从产生到最终的消息接受，中间大致会有三个环节，首先是消息到达交换机、然后是消息通过交换机到达队列，最后消费者消费绑定的队列消息。</p>
 <p> 但是在这个过程中，如果出现网络或者系统的异常，就会导致消息不能被正常消费。如果不能正常消费消息，会造成两方面的问题。</p>
 <h3 id="1-1-在服务端"><a href="#1-1-在服务端" class="headerlink" title="1.1 在服务端"></a>1.1 在服务端</h3><p>消息到达队列，但是没有消费者去消费，就会造成消息积压，被积压的消息会存入缓存，直到有消费者进行消费。如果一直没有消费者进行消费，那么就会直接将内存占满，影响服务器性能。</p>
 <h3 id="1-2-消费端"><a href="#1-2-消费端" class="headerlink" title="1.2 消费端"></a>1.2 消费端</h3><p>一个消息一旦被消费后，那么就会从队列删除。如果说消息已经到达消费者，但是消费者处理消息之前系统出现了异常，那么就相当于这条消息丢失了，是个很大的问题。</p>
@@ -132,221 +99,93 @@
 <p><a href="https://www.jianshu.com/p/2c5eebfd0e95" target="_blank" rel="noopener">https://www.jianshu.com/p/2c5eebfd0e95</a></p>
 <p>Demo:      <a href="https://github.com/zhuanzhiBUG/springboot-rabbitmq.git" target="_blank" rel="noopener">https://github.com/zhuanzhiBUG/springboot-rabbitmq.git</a></p>
 
-
-  
-
-  
-    <div class="post-reward">
-      <div id="reward-button">请杯咖啡呗~</div>
-      <div id="qr" style="display: block;">
-        <div class="wrap">
-            
-            <div class="bg-wrap">
-              <a href="/images/zhifubao.jpg" target="_block" class="bg" style="background-image:url('/images/zhifubao.jpg')"></a>
-              支付宝
-            </div>
-            
-            
-            <div class="bg-wrap">
-                <a href="/images/weixin.jpg" target="_block" class="bg" style="background-image:url('/images/weixin.jpg')"></a>
-              微信
-            </div>
-            
-        </div>
       </div>
-    </div>
-  
-  
-  <div class="post-guide">
-    <div class="item left">
-        
-          <a href="2019/09/15/草原/"><span class="iconfont icon-left"></span>草原</a>
-        
-    </div>
-    <div class="item right">
-        
-          <a href="2019/09/14/我是如何在面试别人Spring事务时“套路”对方的/">我是如何在面试别人Spring事务时“套路”对方的<span class="iconfont icon-right"></span></a>
-        
     </div>
   </div>
+</div>
+<div class="lx-navigation">
+	<div class="lx-cover prev lx-cover-sm" style="background-image: url(/images/footer_1.jpg)">
+		<div class="overlay"></div>
+		<a class="copy" href="/2019/09/15/草原/">
+			<div class="display-t">
+				<div class="display-tc">
+					<div>
+						<span>Next</span>
+						<h3>草原</h3>
+					</div>
+				</div>
+			</div>
+		</a>
+	</div>
+        <div class="lx-cover next lx-cover-sm" style="background-image: url(/images/footer_2.jpg)">
+		<div class="overlay"></div>
+		<a class="copy" href="/2019/09/14/我是如何在面试别人Spring事务时“套路”对方的/">
+			<div class="display-t">
+				<div class="display-tc">
+					<div>
+						<span>Prev</span>
+						<h3>我是如何在面试别人Spring事务时“套路”对方的</h3>
+					</div>
+				</div>
+			</div>
+		</a>
+	</div>
+</div>
+</div>
 
-  
-
-  <div class="post-copyright">
-    <div class="auth">
-      本文作者：<a href="http://yoursite.com">渣渣辉</a>
-    </div>
-    <div class="link">
-      永久链接：<a href="http://yoursite.com/2019/09/15/RabbitMq学习（二）RabbitMQ的消息确认机制/">http://yoursite.com/2019/09/15/RabbitMq学习（二）RabbitMQ的消息确认机制/</a>
-    </div>
-    <div class="declare">
-      版权声明：本文首发于<a href="http://yoursite.com">渣渣辉</a>的博客，转载请注明出处！
-    </div>
+<footer>
+  <div>
+  Copyright &copy; 2019.<a href="/"></a><br>Powered by <a href="https://hexo.io" target="_blank">Hexo</a> | Theme <a href="https://lx.blleng.cn" target="_blank">Lx</a><br>
   </div>
+</footer>
+</div>
 
-  <div id="comment"></div>
-</article>
-        </div>
-        <footer>
-          <div class="copyright">
-            ©2019 <a href="http://yoursite.com">渣渣辉</a>. Powered by
-            <a href="https://hexo.io">hexo</a> &
-            <a href="https://github.com/huiblog">zhazhahui</a>
-          </div>
-          
-        </footer>
-      </div>
-      <div id="card-wrap">
-        <div class="card">
-          <div class="logo-widget">
-            <div class="author">
-              渣渣辉
-            </div>
-            <div class="logo" style="background-image: url('/images/logo.jpeg')"></div>
-          </div>
-          
-          <div class="follow-widget">
-            
-            <a href="https://github.com/huiblog" target="_block">
-              <span class="iconfont icon-github"></span>
-            </a>
-             
-            <a href="/atom.xml" target="_block">
-              <span class="iconfont icon-rss"></span>
-            </a>
-            
-          </div>
-           
-          <div class="toc-widget">
-            <div class="title">
-              <span>Toc</span>
-            </div>
-            <div class="post-toc">
-              <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#一-为什么有消息确认机制"><span class="toc-text">一. 为什么有消息确认机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-在服务端"><span class="toc-text">1.1 在服务端</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-消费端"><span class="toc-text">1.2 消费端</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#二、-怎么使用消息确认机制"><span class="toc-text">二、 怎么使用消息确认机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-消息发送确认"><span class="toc-text">2.1 消息发送确认</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-消息接受确认"><span class="toc-text">2.2 消息接受确认</span></a></li></ol></li></ol>
-            </div>
-          </div>
-           
-          <div class="category-widget">
-            <div class="title">
-              <span>Categories</span>
-              <span><a href="/archives">···</a></span>
-            </div>
-            <div class="list">
-               
-              <a href="/categories/mysql/">mysql</a>
-                
-              <a href="/categories/mysql/锁/">锁</a>
-               
-            </div>
-          </div>
-          <div class="tag-widget">
-            <div class="title">
-              <span>Tag Cloud</span>
-              <span><a href>···</a></span>
-            </div>
-            <div class="tag-cloud">
-              <a href="/tags/RabbitMq/" style="font-size: 20px; color: #4a4a4a">RabbitMq</a> <a href="/tags/mysql/" style="font-size: 13px; color: #4a4a4a">mysql</a> <a href="/tags/事务/" style="font-size: 13px; color: #4a4a4a">事务</a> <a href="/tags/生活/" style="font-size: 13px; color: #4a4a4a">生活</a>
-            </div>
+<button class="menu-trigger"></button>
+<div class="menu">
+  <div class="menu-head">
+    <span class="layer">
+      <div class="col">
+        <div class="row for-pic">
+          <div class="profile-pic">
+            <a href="/"><img src="/images/person_1.jpg" alt="渣渣辉"></a>
           </div>
         </div>
-        
+        <div class="row for-name">
+          <p>渣渣辉</p>
+          <span class="tagline">Hello, World!</span>
+        </div>
       </div>
-    </div>
-    <!-- swiftype -->
-    
-    <!-- swiftype -->
-  </body>
-  
-  <p id="theme_str" hidden>{&#34;title&#34;:null,&#34;subtitle&#34;:null,&#34;description&#34;:null,&#34;author&#34;:&#34;渣渣辉&#34;,&#34;language&#34;:&#34;zh&#34;,&#34;timezone&#34;:null,&#34;url&#34;:&#34;http://yoursite.com&#34;,&#34;root&#34;:&#34;/&#34;,&#34;permalink&#34;:&#34;:year/:month/:day/:title/&#34;,&#34;permalink_defaults&#34;:null,&#34;source_dir&#34;:&#34;source&#34;,&#34;public_dir&#34;:&#34;public&#34;,&#34;tag_dir&#34;:&#34;tags&#34;,&#34;archive_dir&#34;:&#34;archives&#34;,&#34;category_dir&#34;:&#34;categories&#34;,&#34;code_dir&#34;:&#34;downloads/code&#34;,&#34;i18n_dir&#34;:&#34;:lang&#34;,&#34;skip_render&#34;:null,&#34;new_post_name&#34;:&#34;:title.md&#34;,&#34;default_layout&#34;:&#34;post&#34;,&#34;titlecase&#34;:false,&#34;external_link&#34;:true,&#34;filename_case&#34;:0,&#34;render_drafts&#34;:false,&#34;post_asset_folder&#34;:true,&#34;relative_link&#34;:false,&#34;future&#34;:true,&#34;highlight&#34;:{&#34;enable&#34;:true,&#34;auto_detect&#34;:false,&#34;line_number&#34;:true,&#34;tab_replace&#34;:null,&#34;first_line_number&#34;:&#34;always1&#34;},&#34;default_category&#34;:&#34;uncategorized&#34;,&#34;category_map&#34;:null,&#34;tag_map&#34;:null,&#34;date_format&#34;:&#34;YYYY-MM-DD&#34;,&#34;time_format&#34;:&#34;HH:mm:ss&#34;,&#34;per_page&#34;:10,&#34;pagination_dir&#34;:&#34;page&#34;,&#34;theme&#34;:&#34;hexo-theme-huhu&#34;,&#34;deploy&#34;:{&#34;type&#34;:&#34;git&#34;,&#34;repo&#34;:&#34;https://github.com/huiblog/github.io.git&#34;,&#34;branch&#34;:&#34;master&#34;},&#34;ignore&#34;:[],&#34;keywords&#34;:null,&#34;introductionstart&#34;:null,&#34;introductionend&#34;:null,&#34;index_generator&#34;:{&#34;per_page&#34;:10,&#34;order_by&#34;:&#34;-date&#34;,&#34;path&#34;:&#34;&#34;},&#34;admin&#34;:{&#34;deployCommand&#34;:&#34;‘hexo-pubish.bat’&#34;},&#34;category_generator&#34;:{&#34;per_page&#34;:10},&#34;archive_generator&#34;:{&#34;per_page&#34;:10,&#34;yearly&#34;:true,&#34;monthly&#34;:true,&#34;daily&#34;:false},&#34;search&#34;:{&#34;path&#34;:&#34;search.xml&#34;,&#34;field&#34;:&#34;post&#34;,&#34;format&#34;:&#34;html&#34;,&#34;limit&#34;:&#34;10000&#34;},&#34;marked&#34;:{&#34;gfm&#34;:true,&#34;pedantic&#34;:false,&#34;sanitize&#34;:false,&#34;tables&#34;:true,&#34;breaks&#34;:true,&#34;smartLists&#34;:true,&#34;smartypants&#34;:true,&#34;modifyAnchors&#34;:&#34;&#34;,&#34;autolink&#34;:true},&#34;tag_generator&#34;:{&#34;per_page&#34;:10},&#34;server&#34;:{&#34;port&#34;:4000,&#34;log&#34;:false,&#34;compress&#34;:false,&#34;header&#34;:true},&#34;menu&#34;:{&#34;home&#34;:&#34;/&#34;,&#34;archives&#34;:&#34;/archives&#34;,&#34;about&#34;:&#34;/about&#34;},&#34;logo&#34;:&#34;/images/logo.png&#34;,&#34;categories_max&#34;:5,&#34;tags_max&#34;:10,&#34;favicon&#34;:&#34;/images/favicon.ico&#34;,&#34;site_search&#34;:true,&#34;rss&#34;:&#34;/atom.xml&#34;,&#34;follow&#34;:{&#34;github&#34;:&#34;https://github.com/huiblog&#34;},&#34;search_url&#34;:&#34;/search.xml&#34;,&#34;site_icp&#34;:&#34;&#34;,&#34;site_friends&#34;:{&#34;房间里的小猫咪&#34;:&#34;http://baidu.com&#34;},&#34;share&#34;:[&#34;weibo&#34;,&#34;weixin&#34;,&#34;qqkongjian&#34;,&#34;QQ&#34;,&#34;douban&#34;,&#34;facebook&#34;,&#34;twitter&#34;,&#34;google&#34;],&#34;cdn_module&#34;:{&#34;av_min&#34;:&#34;https://cdn.jsdelivr.net/npm/leancloud-storage/dist/av-min&#34;,&#34;pjax&#34;:&#34;https://cdn.bootcss.com/jquery.pjax/2.0.1/jquery.pjax.min&#34;,&#34;jquery&#34;:&#34;https://cdn.bootcss.com/jquery/3.4.1/jquery.min&#34;,&#34;confirm&#34;:&#34;https://cdn.bootcss.com/jquery-confirm/3.3.4/jquery-confirm.min&#34;,&#34;fancybox&#34;:&#34;https://cdn.bootcss.com/fancybox/3.5.7/jquery.fancybox.min&#34;,&#34;algoliasearch&#34;:&#34;https://cdn.jsdelivr.net/npm/algoliasearch@3.33.0/dist/algoliasearchLite.min&#34;},&#34;baidu_push&#34;:true,&#34;reward&#34;:{&#34;weixin&#34;:&#34;images/weixin.jpg&#34;,&#34;zhifubao&#34;:&#34;images/zhifubao.jpg&#34;},&#34;service_worker&#34;:{&#34;open&#34;:false}}</p>
+    </span>
+  </div>
+  <nav class="menu-container">
+  <ul class="menu-items">
+    <li><a href="/"><i class="fa fa-home fa-fw"></i>首页</a></li>
+    <li><a href="/archives/"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+    <li class="has-sub"><span class="dropdown-heading">
+      <i class="fa fa-bookmark fa-fw"></i>页面</span>
+        <ul>
+          <li><a href="/guestbook">留言</a></li>
+        <li><a href="/about">关于</a></li>
+        </ul>
+    </li>
+    <li class="has-sub"><span class="dropdown-heading">
+      <i class="fa fa-link fa-fw"></i>友链</span>
+        <ul>
+          <li> <a href="https://lx.blleng.cn" target="_blank">Theme-Lx</a></li>
+        </ul>
+    </li>
+  </ul>
+  </nav>
+</div>
+
+<div class="gototop js-top">
+  <a href="#" class="js-gotop"><i class="fa fa-arrow-up"></i></a>
+</div>
+<script src="/js/jquery.easing.min.js"></script>
+<script src="/js/jquery.waypoints.min.js"></script>
+<script src="/js/jquery.stellar.min.js"></script>
+<script src="/js/main.js"></script>
+
+
+</body>
 </html>
-<script type="text/javascript">
-  window.addEventListener('load', function() {
-    ;(adsbygoogle = window.adsbygoogle || []).push({
-      google_ad_client: '',
-      enable_page_level_ads: true
-    })
-
-    window.THEME_CONFIG = JSON.parse(document.getElementById('theme_str').innerText)
-    window.loadJs = function(d, m, a) {
-      var c = document.getElementsByTagName('head')[0] || document.head || document.documentElement
-      var b = document.createElement('script')
-      b.defer = true
-      b.setAttribute('type', 'text/javascript')
-      b.setAttribute('charset', 'UTF-8')
-      b.setAttribute('async', 'true')
-      b.setAttribute('src', d)
-      m && b.setAttribute('data-main', '/scripts/app')
-      if (typeof a === 'function') {
-        if (window.attachEvent) {
-          b.onreadystatechange = function() {
-            var e = b.readyState
-            if (e === 'loaded' || e === 'complete') {
-              b.onreadystatechange = null
-              a()
-            }
-          }
-        } else {
-          b.onload = a
-        }
-      }
-      c.appendChild(b)
-    }
-    window.loadJs &&
-      window.loadJs('https://cdn.bootcss.com/require.js/2.3.6/require.min.js', true, function() {
-        require.config({
-          paths: {
-            // site
-            util: 'util',
-            share: 'share',
-            search: 'search',
-            iconfont: 'iconfont',
-            registerSW: 'registerSW',
-            valine: ['cdn/Valine.min'],
-
-            // cdn
-            av: ['https://cdn.jsdelivr.net/npm/leancloud-storage/dist/av-min', 'cdn/av-min'],
-            pjax: ['https://cdn.bootcss.com/jquery.pjax/2.0.1/jquery.pjax.min', 'cdn/pjax.min'],
-            jquery: ['https://cdn.bootcss.com/jquery/3.4.1/jquery.min', 'cdn/jquery.min'],
-            confirm: ['https://cdn.bootcss.com/jquery-confirm/3.3.4/jquery-confirm.min', 'cdn/jquery.confirm.min'],
-            fancybox: ['https://cdn.bootcss.com/fancybox/3.5.7/jquery.fancybox.min', 'cdn/jquery.fancybox.min'],
-            algoliasearch: ['https://cdn.jsdelivr.net/npm/algoliasearch@3.33.0/dist/algoliasearchLite.min', 'cdn/algoliasearchLite.min']
-          },
-
-          map: {
-            '*': {
-              css: 'https://cdn.bootcss.com/require-css/0.1.10/css.min.js'
-            }
-          },
-
-          shim: {
-            fancybox: {
-              deps: ['css!https://cdn.bootcss.com/fancybox/3.5.7/jquery.fancybox.min.css']
-            },
-            confirm: {
-              deps: ['css!https://cdn.bootcss.com/jquery-confirm/3.3.4/jquery-confirm.min.css']
-            }
-          },
-
-          // 加载超时
-          waitSeconds: 3
-        })
-      })
-  })
-</script>
-
-<script>
-  ;(function() {
-    var bp = document.createElement('script')
-    var curProtocol = window.location.protocol.split(':')[0]
-    if (curProtocol === 'https') {
-      bp.src = 'https://zz.bdstatic.com/linksubmit/push.js'
-    } else {
-      bp.src = 'http://push.zhanzhang.baidu.com/push.js'
-    }
-    var s = document.getElementsByTagName('script')[0]
-    s.parentNode.insertBefore(bp, s)
-  })()
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/algoliasearch@3.33.0/dist/algoliasearchLite.min.js"></script>
-<script></script>
