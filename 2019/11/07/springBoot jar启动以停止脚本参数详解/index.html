@@ -10,7 +10,7 @@
     <meta name="description" content>
     
     <title>
-      Archives渣渣辉
+      SpringBootjar启动以停止脚本参数详解渣渣辉
     </title>
     <link rel="manifest" href="/manifest.json">
     <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon">
@@ -34,7 +34,7 @@
         Home
       </a>
       
-      <a href="/archives" class="current">
+      <a href="/archives" class>
         Archives
       </a>
       
@@ -57,228 +57,124 @@
           </div>
         </div>
         <div class="content">
-          <div class="archives">
-    
-    
+          <article class="post-entry">
+    <div class="header">
+      <div class="title">SpringBootjar启动以停止脚本参数详解</div>
+      <div class="meta">
+        <span class="item">
+          <span class="iconfont icon-time-circle"></span>
+          <span>2019/11/07</span>
+        </span>
 
+        
+        
+         
+          <span class="item">
+            <span class="iconfont icon-tag1"></span>
+            <span>
+                
+                  
+                    <a href="/tags/linux">linux</a>
+                  
+                
+            </span>
+          </span>
+         
 
-
-
-
-
-<section class="wrap">
-    <div class="meta">
-        <a href="/archives/2019" class="archive-meta">
-            2019
-        </a>
+        
+          <span class="item leancloud-visitors" id="/2019/11/07/springBoot jar启动以停止脚本参数详解/" data-flag-title="SpringBootjar启动以停止脚本参数详解">
+            <span class="iconfont icon-eye1"></span>
+            <span class="leancloud-visitors-count"></span>
+          </span>
+        
+      </div>
+      <div>
+      </div>
     </div>
-    <div class="year">
-        
-        <article class="item">
-            
-            
-            <div class="content">
-                <div class="title">
-                    <a href="/2019/11/07/springBoot jar启动以停止脚本参数详解/">
-                        SpringBootjar启动以停止脚本参数详解
-                    </a>
-                </div>
-                <div class="meta">
-                    <span class="meta-item">
-                        <span class="iconfont icon-time-circle"></span>
-                        <span>2019/11/07</span>
-                    </span>
-                    
+    <h2 id="一、启动脚本"><a href="#一、启动脚本" class="headerlink" title="一、启动脚本"></a>一、启动脚本</h2><p>Springboot 项目打成jar包后，在Linux环境上一般有如下几种启动方式：</p>
+<h6 id="1-“java-jar-XXX-jar-”"><a href="#1-“java-jar-XXX-jar-”" class="headerlink" title="1.   “java -jar XXX.jar ”"></a>1.   “java -jar XXX.jar ”</h6><p>命令结尾没有 “&amp;” ，表示在当前ssh窗口，可按CTRL + C打断程序运行，或者直接关闭窗口，则程序直接退出</p>
+<h6 id="2-java-jar-app-jar-amp"><a href="#2-java-jar-app-jar-amp" class="headerlink" title="2. java -jar app.jar &amp;"></a>2. java -jar app.jar &amp;</h6><p>表示在当窗口关闭时，程序才会中止运行。&amp;代表让该命令在后台执行。</p>
+<h6 id="3-nohub-方式启动："><a href="#3-nohub-方式启动：" class="headerlink" title="3. nohub 方式启动："></a>3. nohub 方式启动：</h6><p>&amp; 表示<strong>后台运行</strong>，但是当用户推出终端或挂起的时候，命令也跟着退出。而nohub的意思就是 no hung up (不挂起)，命令永久的执行下去，和用户终端没有关系。  </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nohup java -Dfile.encoding=UTF-8 -Xms2000m -Xmx2000m -jar app.jar &gt;/dev/null 2&gt;&amp;1 &amp;</span><br></pre></td></tr></table></figure>
 
-                    
-                </div>
-            </div>
-        </article>
-        
+<p>参数详解：<br>nohub ： 不挂断地运行命令<br>-Dfile.encoding=UTF-8： 字符集（可以不用设置）<br> -Xms2000m：启动分配内存<br>-Xmx2000m：运行最大内存<br>-jar :jar方式启动  </p>
+<blockquote>
+<p>/dev/null &gt;2&gt;&amp; 1 :  一般情况下是指定日志输出位置例如：<br>nohup java -jar XXX.jar &gt; Log.log &amp;</p>
+</blockquote>
+<p>标准输入文件(stdin)：stdin的文件描述符为0，Unix程序默认从stdin读取数据。<br>标准输出文件(stdout)：stdout   的文件描述符为1，Unix程序默认向stdout输出数据。<br>标准错误文件(stderr)：stderr的文件描述符为2，Unix程序会向stderr流中写入错误信息。<br>“&gt;dev/null 2&gt;&amp;1” ：将 标准错误 (stderr) 2 重定向到 (stdout ) 1 最终输出到 Log.log 中</p>
+<p>dev/null 是一个特殊的文件，写入到它的内容都会被丢弃；如果尝试从该文件读取内容，那么什么也读不到。但是 /dev/null 文件非常有用，将命令的输出重定向到它，会起到”禁止输出”的效果。</p>
+<p>最后说说为什么要不想输出文件了还需需要这样做：<br>nohub 命令缺省日志的情况下回默认将日志输出到 nohup.out 中<br>所以要指定日志，但是不想输出日志的情况下就可以如上所做。<br>可以创建 start.sh 文件，然后将nohub 启动命令写入即可。</p>
+<h2 id="二、停止脚本"><a href="#二、停止脚本" class="headerlink" title="二、停止脚本"></a>二、停止脚本</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps -ef | grep app.jar | grep -v grep | awk '&#123;print $2&#125;' | xargs kill</span><br></pre></td></tr></table></figure>
 
+<p>命令详解：<br>ps -ef | grep app.jar<br>这不不用多说，就是查找app.jar 这个进程的相关信息。<br>其中 | 是 管道符，意思就是上一条命令的输出作为下一条命令的参数。也就是说这个命令其实是两条命令。<br>ps -ef  是第一步代表查找所有进程<br>grep app.jar 第二步代表过滤出所有含有app.jar的进程  </p>
+<p>举个例子就是：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ps -ef|grep app.jar </span><br><span class="line">root      6999     1  0 Nov04 ?        00:06:23 java -Dfile.encoding=UTF-8 -Xms2000m -Xmx2000m -jar app.jar</span><br><span class="line">root      8474 29928  0 10:55 pts/1    00:00:00 grep --color=auto app.jar</span><br></pre></td></tr></table></figure>
 
-        <article class="item">
-            
-            
-            <div class="photo">
-                <a href="/2019/11/06/策略模式消除恶心的if-else/" class="photo" title="策略模式消除恶心的if-else" style="background-image: url( 'https://s2.ax1x.com/2019/11/06/MP5y4K.jpg' )"></a>
-            </div>
-            
-            <div class="content">
-                <div class="title">
-                    <a href="/2019/11/06/策略模式消除恶心的if-else/">
-                        策略模式消除恶心的if-else
-                    </a>
-                </div>
-                <div class="meta">
-                    <span class="meta-item">
-                        <span class="iconfont icon-time-circle"></span>
-                        <span>2019/11/07</span>
-                    </span>
-                    
+<p><strong>但是为什么会出现两个进程呢</strong>，其中一个是 java 另一个是grep.<br>其实在执行grep app.jar 的时候，本身也是一个进程，并且包含了app.jar 关键字，所以筛选的时候就显示出来了。其实不管有没有app.jar 这个进程，都会显示出来，随便编一个aaaa.jar  执行:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ps -ef|grep aaa.jar</span><br><span class="line">root     14003 29928  0 11:04 pts/1    00:00:00 grep --color=auto aaa.jar</span><br></pre></td></tr></table></figure>
 
-                    
-                </div>
-            </div>
-        </article>
-        
+<p>杀掉进程，需要知道进程号，目前有两个进程，就需要过滤掉grep这个进程。<br> grep -v grep ：就是去除去包含grep的进程  。与上面的命令通过 | 连接后的执行结果如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ps -ef | grep app.jar | grep -v grep</span><br><span class="line">root      6999     1  0 Nov04 ?        00:06:24 java -Dfile.encoding=UTF-8 -Xms2000m -Xmx2000m -jar app.jar</span><br></pre></td></tr></table></figure>
 
+<p>可以看到已经将java进程过滤出来了。<br>awk ‘{print $2}’  就是根据分割符打印出第二个参数，这里就是进程号。  </p>
+<p> xargs kill 中， xargs 是命令的作用，是将标准输入转为命令行参数。有的命令是不支持将标准输入作为参数的，也就是不支持 | 作为输出的。上面的grep 支持。什么是标准输入不多说了。<br> 这个命令也就可以看做前一步不是输入了进程号么，但是不能通过 | 传递给 kill 这个命令，只能通过xargs 转化一下。</p>
+<p> 脚本执行如果提权限问题 执行 chmod u+x *.sh即可 </p>
+<p>参考资料：</p>
+<p>xargs命令详解 <a href="http://www.ruanyifeng.com/blog/2019/08/xargs-tutorial.html" target="_blank" rel="noopener">http://www.ruanyifeng.com/blog/2019/08/xargs-tutorial.html</a></p>
+<p><a href="https://blog.csdn.net/wngpenghao/article/details/83022185" target="_blank" rel="noopener">https://blog.csdn.net/wngpenghao/article/details/83022185</a></p>
 
-        <article class="item">
-            
-            
-            <div class="photo">
-                <a href="/2019/11/02/oracle通过存储过程实现动态行转列/" class="photo" title="oracle 通过存储过程实现动态行转列" style="background-image: url( 'https://s2.ax1x.com/2019/11/02/KLiolD.jpg' )"></a>
-            </div>
-            
-            <div class="content">
-                <div class="title">
-                    <a href="/2019/11/02/oracle通过存储过程实现动态行转列/">
-                        oracle 通过存储过程实现动态行转列
-                    </a>
-                </div>
-                <div class="meta">
-                    <span class="meta-item">
-                        <span class="iconfont icon-time-circle"></span>
-                        <span>2019/11/07</span>
-                    </span>
-                    
-
-                    
-                </div>
-            </div>
-        </article>
-        
-
-
-        <article class="item">
-            
-            
-            <div class="photo">
-                <a href="/2019/09/15/草原/" class="photo" title="太阳和野花" style="background-image: url( 'https://s2.ax1x.com/2019/11/02/KLifFx.jpg' )"></a>
-            </div>
-            
-            <div class="content">
-                <div class="title">
-                    <a href="/2019/09/15/草原/">
-                        太阳和野花
-                    </a>
-                </div>
-                <div class="meta">
-                    <span class="meta-item">
-                        <span class="iconfont icon-time-circle"></span>
-                        <span>2019/11/07</span>
-                    </span>
-                    
-
-                    
-                </div>
-            </div>
-        </article>
-        
-
-
-        <article class="item">
-            
-            
-            <div class="content">
-                <div class="title">
-                    <a href="/2019/09/15/RabbitMq学习（二）RabbitMQ的消息确认机制/">
-                        RabbitMq学习（二）RabbitMQ的消息确认机制
-                    </a>
-                </div>
-                <div class="meta">
-                    <span class="meta-item">
-                        <span class="iconfont icon-time-circle"></span>
-                        <span>2019/11/07</span>
-                    </span>
-                    
-
-                    
-                </div>
-            </div>
-        </article>
-        
-
-
-        <article class="item">
-            
-            
-            <div class="content">
-                <div class="title">
-                    <a href="/2019/09/14/我是如何在面试别人Spring事务时“套路”对方的/">
-                        我是如何在面试别人Spring事务时“套路”对方的
-                    </a>
-                </div>
-                <div class="meta">
-                    <span class="meta-item">
-                        <span class="iconfont icon-time-circle"></span>
-                        <span>2019/11/07</span>
-                    </span>
-                    
-
-                    
-                </div>
-            </div>
-        </article>
-        
-
-
-        <article class="item">
-            
-            
-            <div class="content">
-                <div class="title">
-                    <a href="/2019/09/14/RabbitMq学习（一）Exchange的四种类型和属性/">
-                        RabbitMq学习（一）Exchange的四种类型和属性
-                    </a>
-                </div>
-                <div class="meta">
-                    <span class="meta-item">
-                        <span class="iconfont icon-time-circle"></span>
-                        <span>2019/11/07</span>
-                    </span>
-                    
-
-                    
-                </div>
-            </div>
-        </article>
-        
-
-
-        <article class="item">
-            
-            
-            <div class="content">
-                <div class="title">
-                    <a href="/2019/09/10/Mysql-乐观锁-和悲观锁/">
-                        Mysql 乐观锁 和悲观锁
-                    </a>
-                </div>
-                <div class="meta">
-                    <span class="meta-item">
-                        <span class="iconfont icon-time-circle"></span>
-                        <span>2019/11/07</span>
-                    </span>
-                    
-
-                    
-                </div>
-            </div>
-        </article>
-        
-        
-    </div>
-</section>
 
   
 
-  <div class="paginator">
-        <span class="page-number current">1</span>
+  
+    <div class="post-reward">
+      <div id="reward-button">请杯咖啡呗~</div>
+      <div id="qr" style="display: block;">
+        <div class="wrap">
+            
+            <div class="bg-wrap">
+              <a href="/images/zhifubao.jpg" target="_block" class="bg" style="background-image:url('/images/zhifubao.jpg')"></a>
+              支付宝
+            </div>
+            
+            
+            <div class="bg-wrap">
+                <a href="/images/weixin.jpg" target="_block" class="bg" style="background-image:url('/images/weixin.jpg')"></a>
+              微信
+            </div>
+            
+        </div>
+      </div>
+    </div>
+  
+  
+  <div class="post-guide">
+    <div class="item left">
+        
+    </div>
+    <div class="item right">
+        
+          <a href="2019/11/06/策略模式消除恶心的if-else/">策略模式消除恶心的if-else<span class="iconfont icon-right"></span></a>
+        
+    </div>
   </div>
-</div>
 
+  
+
+  <div class="post-copyright">
+    <div class="auth">
+      本文作者：<a href="https://huiblog.github.io">渣渣辉</a>
+    </div>
+    <div class="link">
+      永久链接：<a href="https://huiblog.github.io/2019/11/07/springBoot jar启动以停止脚本参数详解/">https://huiblog.github.io/2019/11/07/springBoot jar启动以停止脚本参数详解/</a>
+    </div>
+    <div class="declare">
+      版权声明：本文首发于<a href="https://huiblog.github.io">渣渣辉</a>的博客，转载请注明出处！
+    </div>
+  </div>
+
+  <div id="comment"></div>
+</article>
         </div>
         <footer>
           <div class="copyright">
@@ -309,7 +205,16 @@
             </a>
             
           </div>
-          
+           
+          <div class="toc-widget">
+            <div class="title">
+              <span>Toc</span>
+            </div>
+            <div class="post-toc">
+              <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#一、启动脚本"><span class="toc-text">一、启动脚本</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#1-“java-jar-XXX-jar-”"><span class="toc-text">1.   “java -jar XXX.jar ”</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2-java-jar-app-jar-amp"><span class="toc-text">2. java -jar app.jar &amp;</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#3-nohub-方式启动："><span class="toc-text">3. nohub 方式启动：</span></a></li></ol></li></ol><li class="toc-item toc-level-2"><a class="toc-link" href="#二、停止脚本"><span class="toc-text">二、停止脚本</span></a></li>
+            </div>
+          </div>
+           
           <div class="category-widget">
             <div class="title">
               <span>Categories</span>
